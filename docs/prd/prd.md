@@ -4,7 +4,7 @@
 **Target delivery:** Two weeks; optional polish in weeks three to four  
 **Product type:** Private, deployed web application  
 **Primary user:** A job seeker applying for software roles  
-**Working stack:** Next.js, TypeScript, Drizzle ORM, Supabase Postgres/Auth/Storage, Tailwind CSS, shadcn/ui, Radix UI, Lucide React, Zod, one structured-output AI provider, Vercel
+**Working stack:** Next.js, TypeScript, tRPC, Drizzle ORM, Supabase Postgres/Auth/Storage, Tailwind CSS, Zod, one structured-output AI provider, Vercel
 
 ## 1. Executive Summary
 
@@ -55,9 +55,7 @@ As a job seeker, I want a private account so that my job-search information and 
 
 **Acceptance criteria**
 
-- The application supports email/password sign-up and sign-in through Better Auth. Registration
-  creates an authenticated session immediately; email verification is deferred for a later,
-  explicitly approved change.
+- The application supports email/password sign-up and sign-in with verified email addresses.
 - Unauthenticated visitors see only the sign-in screen.
 - Every application record has an owner, and database policies prevent access by other users.
 - The MVP has no Google sign-in, invite allowlist, or user-facing administration screen.
@@ -161,19 +159,13 @@ Use five anonymized or synthetic fixtures before deployment: clear match, partia
 ```mermaid
 flowchart LR
   U[Signed-in user] --> W[Next.js workspace]
-  W --> S[Server actions / API + Zod]
-  S --> O[Drizzle ORM]
+  W --> T[tRPC procedures + Zod]
+  T --> O[Drizzle ORM]
   O --> D[(Supabase Postgres + RLS)]
-  S --> B[(Private résumé storage)]
-  S --> X[PDF/DOCX text extraction]
-  S --> A[Structured-output AI provider]
+  T --> B[(Private résumé storage)]
+  T --> X[PDF/DOCX text extraction]
+  T --> A[Structured-output AI provider]
 ```
-
-### UI Component System
-
-- The interface uses shadcn/ui components styled with Tailwind CSS.
-- Interactive primitives such as dialogs, menus, selects, tabs, and accessible form controls use Radix UI through shadcn/ui where applicable.
-- Lucide React is the standard icon library; custom icon assets are not required for the MVP.
 
 ### Core Data Model
 
@@ -190,20 +182,20 @@ No events, diagnostic history, experiments, requirement-evidence join table, ré
 
 ### Data Access and Migrations
 
+- tRPC is the required application API layer. Protected procedures obtain the authenticated user from the Supabase-backed request context before invoking application services.
+- Shared Zod schemas validate tRPC procedure inputs and structured AI outputs; inferred types flow to the client without a separately maintained REST contract.
 - Drizzle ORM is the required server-side database access layer for Supabase Postgres.
 - Drizzle schema definitions are the application’s canonical typed representation of tables, columns, relationships, indexes, and enums.
 - Version-controlled Drizzle migrations create and evolve the application schema; production schema changes must not rely on undocumented dashboard edits.
 - Database access remains server-only. Client components never receive database credentials or create direct Drizzle connections.
 - Repository or query functions require the authenticated user ID and scope every read and mutation to that owner.
-- Supabase provides Postgres hosting, row-level security, and private résumé storage. Better Auth
-  provides credential authentication and sessions, persisted through the server-only Drizzle
-  connection; Drizzle does not replace Supabase storage or RLS.
+- Supabase continues to provide authentication, Postgres hosting, row-level security, and private résumé storage; Drizzle does not replace those services.
 
 ### Security and Privacy
 
-- Better Auth protects workspace routes; every user-owned table has `user_id` and row-level security.
-- Server operations verify the authenticated Better Auth user before calling Drizzle. Every Drizzle query verifies ownership of the opportunity before accessing its résumé, evidence, feedback, or requirements. Future Supabase RLS policies must receive the verified Better Auth user ID through a server-controlled identity propagation mechanism; client-supplied owner IDs are never trusted.
-- Cross-user tests cover both the public Supabase access boundary and server-side Drizzle operations, including attempts to read, update, delete, or relate another user’s records.
+- Supabase Auth protects workspace routes; every user-owned table has `user_id` and row-level security.
+- Protected tRPC procedures verify the authenticated Supabase user before calling Drizzle. Every Drizzle query verifies ownership of the opportunity before accessing its résumé, evidence, feedback, or requirements.
+- Cross-user tests cover both the public Supabase access boundary and protected tRPC procedures, including attempts to read, update, delete, or relate another user’s records.
 - Database connection credentials remain server-only and are never exposed through browser bundles, logs, or error messages.
 - Résumé objects use user-scoped private paths and authenticated, short-lived download URLs. Permanent public URLs are prohibited.
 - All form inputs and AI responses are validated server-side. User content is rendered as plain text.
@@ -215,8 +207,7 @@ No events, diagnostic history, experiments, requirement-evidence join table, ré
 
 **Week 1 — Private vertical slice**
 
-- Create the deployed Next.js application, Better Auth email authentication, protected routes,
-  Drizzle schema and migrations, and RLS/ownership tests.
+- Create the deployed Next.js application, email authentication, protected routes, tRPC context and protected-procedure middleware, Drizzle schema and migrations, and RLS/ownership tests.
 - Build opportunity CRUD, private PDF/DOCX upload, extraction, and reviewed-text states.
 - Build the basic opportunity detail interface and evidence/feedback forms.
 
