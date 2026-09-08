@@ -55,7 +55,9 @@ As a job seeker, I want a private account so that my job-search information and 
 
 **Acceptance criteria**
 
-- The application supports email/password sign-up and sign-in with verified email addresses.
+- The application supports email/password sign-up and sign-in through Better Auth. Registration
+  creates an authenticated session immediately; email verification is deferred for a later,
+  explicitly approved change.
 - Unauthenticated visitors see only the sign-in screen.
 - Every application record has an owner, and database policies prevent access by other users.
 - The MVP has no Google sign-in, invite allowlist, or user-facing administration screen.
@@ -193,12 +195,14 @@ No events, diagnostic history, experiments, requirement-evidence join table, ré
 - Version-controlled Drizzle migrations create and evolve the application schema; production schema changes must not rely on undocumented dashboard edits.
 - Database access remains server-only. Client components never receive database credentials or create direct Drizzle connections.
 - Repository or query functions require the authenticated user ID and scope every read and mutation to that owner.
-- Supabase continues to provide authentication, Postgres hosting, row-level security, and private résumé storage; Drizzle does not replace those services.
+- Supabase provides Postgres hosting, row-level security, and private résumé storage. Better Auth
+  provides credential authentication and sessions, persisted through the server-only Drizzle
+  connection; Drizzle does not replace Supabase storage or RLS.
 
 ### Security and Privacy
 
-- Supabase Auth protects workspace routes; every user-owned table has `user_id` and row-level security.
-- Server operations verify the authenticated Supabase user before calling Drizzle. Every Drizzle query verifies ownership of the opportunity before accessing its résumé, evidence, feedback, or requirements.
+- Better Auth protects workspace routes; every user-owned table has `user_id` and row-level security.
+- Server operations verify the authenticated Better Auth user before calling Drizzle. Every Drizzle query verifies ownership of the opportunity before accessing its résumé, evidence, feedback, or requirements. Future Supabase RLS policies must receive the verified Better Auth user ID through a server-controlled identity propagation mechanism; client-supplied owner IDs are never trusted.
 - Cross-user tests cover both the public Supabase access boundary and server-side Drizzle operations, including attempts to read, update, delete, or relate another user’s records.
 - Database connection credentials remain server-only and are never exposed through browser bundles, logs, or error messages.
 - Résumé objects use user-scoped private paths and authenticated, short-lived download URLs. Permanent public URLs are prohibited.
@@ -211,7 +215,8 @@ No events, diagnostic history, experiments, requirement-evidence join table, ré
 
 **Week 1 — Private vertical slice**
 
-- Create the deployed Next.js application, email authentication, protected routes, Drizzle schema and migrations, and RLS/ownership tests.
+- Create the deployed Next.js application, Better Auth email authentication, protected routes,
+  Drizzle schema and migrations, and RLS/ownership tests.
 - Build opportunity CRUD, private PDF/DOCX upload, extraction, and reviewed-text states.
 - Build the basic opportunity detail interface and evidence/feedback forms.
 

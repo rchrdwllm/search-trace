@@ -2,6 +2,9 @@ import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
 import { toHaveNoViolations } from "jest-axe";
 import { clearPublicSupabaseEnv } from "@/tests/001-project-foundation/test-utils";
+import { TextEncoder, TextDecoder } from "node:util";
+
+Object.assign(globalThis, { TextEncoder, TextDecoder });
 
 expect.extend(toHaveNoViolations);
 

@@ -1,6 +1,6 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.0 -> 1.1.0
+- Version change: 1.1.0 -> 1.2.0
 - Modified principles:
   - Placeholder Principle 1 -> I. Evidence Before Inference
   - Placeholder Principle 2 -> II. Human Review and Control
@@ -14,6 +14,9 @@ Sync Impact Report
   - V. Lean, Testable Delivery -> adds a mandatory spec-named test directory convention
 - Removed sections: none
 - Follow-up TODOs: none
+- Amendment: Replaced Supabase Auth with Better Auth for credential/session ownership, deferred
+  email verification, and documented server-controlled Better Auth identity propagation to future
+  Supabase RLS policies.
 -->
 # SearchTrace Constitution
 
@@ -68,7 +71,7 @@ specification MAY live directly under `tests/`.
 ## Product and Technical Constraints
 
 - The deployed product MUST remain a private web application built around the architecture in
-  `docs/prd/prd.md`: Next.js and TypeScript, server-side validation with Zod, Supabase Auth,
+  `docs/prd/prd.md`: Next.js and TypeScript, server-side validation with Zod, Better Auth,
   Postgres with row-level security, private object storage, server-side PDF/DOCX extraction, and
   one structured-output AI provider.
 - Each analysis MUST be scoped to one opportunity and only its pasted job description, reviewed
@@ -120,4 +123,4 @@ PATCH for non-semantic clarification. Compliance MUST be reviewed during specifi
 implementation review, and release readiness. Any exception MUST be documented with scope,
 rationale, risk, owner, and expiry date; silent exceptions are prohibited.
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-08 | **Last Amended**: 2026-09-08
+**Version**: 1.2.0 | **Ratified**: 2026-09-08 | **Last Amended**: 2026-09-08

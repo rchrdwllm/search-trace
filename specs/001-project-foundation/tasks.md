@@ -105,6 +105,7 @@ description: "Actionable implementation tasks for the SearchTrace project founda
 
 - [X] T031 [P] [US3] Add regression assertions for restored Create Next App/Vercel content, removed main landmark, enabled deferred navigation, and unexpected shell remote calls in `tests/foundation/foundation-regressions.test.tsx`.
 - [X] T032 [P] [US3] Add script-contract tests or documented command assertions for the `check` pipeline in `tests/foundation/verification-contract.test.ts`.
+- [X] T050 [US3] Extend shell regression coverage to assert that the first authenticated workspace layout retains `AppShell`, its skip link, primary navigation, and exactly one primary landmark in `tests/001-project-foundation/app-shell/dashboard-shell.test.tsx`.
 
 ### Implementation for User Story 3
 

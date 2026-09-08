@@ -1,8 +1,12 @@
 # App Shell and UI Contract
 
-## Route Contract: `/`
+## Initial Route Contract: `/`
 
 The root route is a service-independent foundation page composed through the installed `@efferd/app-shell-4` structure. It must render successfully with both public Supabase variables absent and must not import or call either Supabase factory. The route/layout remain server-renderable even though the nested sidebar shell may be a synchronous Client Component for collapse and mobile behavior.
+
+### Extension Compatibility
+
+The foundation demo at `/` is the initial verification composition, not a permanent public-route commitment. A later authentication feature may redirect `/` to its public authentication entry. In that case, private workspace route layouts must compose `AppShell` so its product identity, navigation, skip link, sidebar behavior, and exactly-one-primary-landmark contract remain available after sign-in. Route children must not introduce a second `main` landmark.
 
 ## Block Provenance Contract
 
@@ -45,7 +49,7 @@ All controls use native semantics, stable accessible names, visible focus indica
 
 ## Forbidden Behavior
 
-- No sign-in, sign-up, route protection, data query, file action, AI action, or application workflow is presented as functional.
+- In the foundation demo, no sign-in, sign-up, route protection, data query, file action, AI action, or application workflow is presented as functional. Later approved features may render their own authenticated route content inside the shell without altering shell responsibilities.
 - No click handler is added solely to simulate unfinished navigation.
 - No user-authored or remote content is rendered.
 - No shell import causes environment validation, cookie access, client creation, or network activity.
