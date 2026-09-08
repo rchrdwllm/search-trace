@@ -4,7 +4,7 @@
 **Target delivery:** Two weeks; optional polish in weeks three to four  
 **Product type:** Private, deployed web application  
 **Primary user:** A job seeker applying for software roles  
-**Working stack:** Next.js, TypeScript, tRPC, Drizzle ORM, Supabase Postgres/Auth/Storage, Tailwind CSS, Zod, one structured-output AI provider, Vercel
+**Working stack:** Next.js, TypeScript, tRPC, Drizzle ORM, Supabase Postgres/Auth/Storage, Tailwind CSS, Zod, Vercel AI SDK with Google Gemini 3.6 Flash, Vercel
 
 ## 1. Executive Summary
 
@@ -129,6 +129,8 @@ This MVP will not include:
 
 The AI may extract draft requirements, assess user-supplied evidence, and suggest one next action. It may not invent work history, claim a requirement guarantees hiring success, determine causality from feedback, browse the web, use tools, or alter user records without review.
 
+**Configured Provider and Framework:** SearchTrace uses the **Vercel AI SDK** (`ai`, `@ai-sdk/google`) with **Google Gemini 3.6 Flash** (`gemini-3.6-flash`) for all structured output generation.
+
 ### Authorized Inputs
 
 For a single opportunity, the request includes only:
@@ -164,7 +166,7 @@ flowchart LR
   O --> D[(Supabase Postgres + RLS)]
   T --> B[(Private résumé storage)]
   T --> X[PDF/DOCX text extraction]
-  T --> A[Structured-output AI provider]
+  T --> A[Vercel AI SDK + Google Gemini 3.6 Flash]
 ```
 
 ### Core Data Model

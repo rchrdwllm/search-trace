@@ -48,6 +48,7 @@ SearchTrace is an **evidence-gap analyzer**, strictly distinguishing between sub
 | **Database & ORM** | PostgreSQL hosted on Supabase; Drizzle ORM `0.45.2` | Drizzle Kit `0.31.10`, `postgres` client, `@electric-sql/pglite` for offline tests. |
 | **File Storage** | Supabase Storage | Private `resumes` bucket; signed, short-lived URLs (60s); user-scoped paths; memory storage fallback for offline tests. |
 | **Document Text Extraction** | `unpdf` `1.8.1`, `mammoth` `1.12.2` | Server-side parsing for PDF and DOCX documents with magic-byte validation. |
+| **AI & LLM Structured Output** | Vercel AI SDK (`ai` `7.0.93`, `@ai-sdk/google` `4.0.64`) | Structured generation via `generateObject` powered by Google Gemini 3.6 Flash (`gemini-3.6-flash`), verbatim citation verification, 5 req/day rate limiter, and in-memory mock fallback for offline test gate. |
 | **Styling & UI** | Tailwind CSS v4, Radix UI, Lucide Icons | `@tailwindcss/postcss`, `shadcn` 4.21.0 (`radix-nova` style), `class-variance-authority`. |
 | **Testing** | Jest `30.5.1` (with `--experimental-vm-modules`) | `jest-environment-jsdom`, React Testing Library, `jest-axe`, PGlite. |
 
@@ -328,7 +329,25 @@ Authentication is powered by **Better Auth 1.7.3**.
    - Sign-up creates an active session immediately.
    - Passwords and tokens must never be logged or returned in procedure errors.
 
-### 6.5 Boundary Isolation & "Server-Only" Hygiene
+### 6.5 AI Requirement Extraction & Citation Verification Subsystem
+Automated requirement extraction parses pasted job descriptions to draft 5–12 cited requirements:
+
+1. **Framework & Model**:
+   - Uses the **Vercel AI SDK** (`ai`, `@ai-sdk/google`) with **Google Gemini 3.6 Flash** (`gemini-3.6-flash`).
+   - Invoked via `generateObject()` with `extractedRequirementsDraftSchema` enforcing structured JSON responses server-side.
+2. **Citation Verification Pipeline**:
+   - Server-side `verifyCitation` in `lib/extraction/citation-verifier.ts` checks that every quoted excerpt is an exact, authentic substring of the opportunity's job description.
+   - Hallucinated or non-matching quotations fail validation before persistence or client display.
+3. **Two-Tier Human Review Lifecycle**:
+   - Calling `requirement.extract` produces an uncommitted client-side draft. Database records are completely unchanged until explicit user confirmation.
+   - Users can edit titles, change categories, update citations, add manual requirements, or delete draft items before committing via `requirement.save`.
+4. **Rate Limiting (5 requests/user/day)**:
+   - Server-enforced via `user_daily_usage` table with UTC midnight reset.
+   - Blocks excess requests with `TOO_MANY_REQUESTS` code to protect provider budgets.
+5. **Zero-Credential Offline Resilience**:
+   - `InMemoryAiExtractor` in `lib/ai/mock.ts` provides deterministic, fixture-based requirements for tests and local development when `AI_PROVIDER=memory` or API keys are absent, ensuring `bun run check` passes offline.
+
+### 6.6 Boundary Isolation & "Server-Only" Hygiene
 The repository enforces strict module separation verified by automated tests:
 
 - **Server-Only Files**: Add `import "server-only";` at the top of all private files:
@@ -338,16 +357,23 @@ The repository enforces strict module separation verified by automated tests:
   - `lib/storage/resume.ts`
   - `lib/extraction/magic-bytes.ts`
   - `lib/extraction/parser.ts`
+  - `lib/extraction/citation-verifier.ts`
+  - `lib/ai/gemini.ts`
+  - `lib/ai/mock.ts`
+  - `lib/ai/rate-limiter.ts`
+  - `lib/ai/types.ts`
+  - `lib/ai/index.ts`
   - `lib/supabase/server.ts`
   - `trpc/init.ts`
   - `trpc/server.tsx`
+  - `trpc/routers/requirement.ts`
   - `app/api/opportunities/[opportunityId]/resume/route.ts`
 - **Client-Only Files**: Add `"use client";` and `import "client-only";` where applicable:
   - `lib/supabase/client.ts`
   - `trpc/client.tsx`
 - **Static Boundary Invariants**:
-  - `DATABASE_URL`, `@/lib/db`, and `@/lib/auth` must **never** be imported into browser-reachable modules.
-  - Storage secrets and server extraction tools must never leak to client components.
+  - `DATABASE_URL`, `@/lib/db`, `@/lib/auth`, and AI credentials must **never** be imported into browser-reachable modules.
+  - Storage secrets, server extraction tools, and model prompts must never leak to client components.
 
 ---
 
