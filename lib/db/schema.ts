@@ -1,5 +1,6 @@
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import type { OpportunityStatus } from "@/lib/validations/opportunity";
+import type { ExtractionState } from "@/lib/validations/resume";
 
 /** Better Auth records use public-schema tables but are server-only and Data API restricted. */
 
@@ -83,4 +84,44 @@ export const opportunities = pgTable(
 export type Opportunity = typeof opportunities.$inferSelect;
 export type NewOpportunity = typeof opportunities.$inferInsert;
 
-export const schema = { user, session, account, verification, opportunities };
+export const resumes = pgTable(
+  "resumes",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    opportunityId: text("opportunity_id")
+      .notNull()
+      .unique()
+      .references(() => opportunities.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    fileName: text("file_name").notNull(),
+    fileSize: integer("file_size").notNull(),
+    fileType: text("file_type").notNull(),
+    storagePath: text("storage_path").notNull(),
+    extractionState: text("extraction_state")
+      .$type<ExtractionState>()
+      .notNull()
+      .default("pending"),
+    extractedText: text("extracted_text"),
+    reviewedText: text("reviewed_text"),
+    aiOptIn: boolean("ai_opt_in").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("resumes_opportunity_id_idx").on(table.opportunityId),
+    index("resumes_user_id_idx").on(table.userId),
+  ],
+);
+
+export type Resume = typeof resumes.$inferSelect;
+export type NewResume = typeof resumes.$inferInsert;
+
+export const schema = { user, session, account, verification, opportunities, resumes };

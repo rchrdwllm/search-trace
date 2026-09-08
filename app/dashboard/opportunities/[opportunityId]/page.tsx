@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTRPCCaller } from "@/trpc/server";
 import { OpportunityStatusBadge } from "@/components/opportunities/opportunity-status-badge";
 import { OpportunityDeleteDialog } from "@/components/opportunities/opportunity-delete-dialog";
+import { ResumeSection } from "@/components/resumes/resume-section";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -155,6 +156,8 @@ export default async function OpportunityDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      <ResumeSection opportunityId={opportunity.id} />
     </div>
   );
 }
