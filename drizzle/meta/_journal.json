@@ -5,43 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1788854091089,
-      "tag": "0000_flimsy_magneto",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1788864674407,
-      "tag": "0001_add_opportunities_table",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1788867352105,
-      "tag": "0002_add_resumes_table",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1788870288048,
-      "tag": "0003_add_requirements_table",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1788873049906,
-      "tag": "0004_add_evidence_tables",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1788874883314,
-      "tag": "0005_add_feedback_items_table",
+      "when": 1788883123361,
+      "tag": "0000_stale_callisto",
       "breakpoints": true
     }
   ]
