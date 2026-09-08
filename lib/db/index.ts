@@ -11,3 +11,12 @@ export function createDatabaseClient() {
 
   return { db, close: () => client.end({ timeout: 5 }) };
 }
+
+let defaultClient: ReturnType<typeof createDatabaseClient> | null = null;
+
+export function getDb() {
+  if (!defaultClient) {
+    defaultClient = createDatabaseClient();
+  }
+  return defaultClient.db;
+}
