@@ -11,7 +11,20 @@ bun install --frozen-lockfile
 bun run dev
 ```
 
-The root page renders without `.env.local`. The committed [.env.example](.env.example) documents the only public Supabase variables reserved for a later integration feature. Copy it to `.env.local` only when exercising those factories locally; do not add secret or service-role keys.
+The root page renders without `.env.local`. Copy [.env.example](.env.example) to `.env.local` when configuring local integrations. `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are browser-safe; `DATABASE_URL` is a server-only direct PostgreSQL credential and must never be committed or exposed to client code. No service-role or secret key is needed for this setup.
+
+## Database workflow
+
+Drizzle owns the application schema. Edit `lib/db/schema.ts`, generate a migration with `bun run db:generate -- --name <change-name>`, review the SQL and metadata under `drizzle/`, then apply reviewed artifacts with `bun run db:migrate` against an intentionally selected target. Do not use `drizzle-kit push`, dashboard-only edits, or a competing Supabase migration history. The initial baseline is intentionally empty and creates no product tables.
+
+Install the maintained project guidance with:
+
+```powershell
+bunx skills add https://github.com/lobehub/lobehub --skill drizzle
+bunx skills add https://github.com/supabase/agent-skills --skill supabase
+```
+
+Review `.agents/skills/drizzle/`, `.agents/skills/supabase/`, and `skills-lock.json` after installation. If installation fails, stop and resolve the tooling issue; do not substitute credentials or alter a backend. See the [setup quickstart](specs/002-drizzle-supabase-setup/quickstart.md) for offline checks and the optional disposable-target migration procedure.
 
 ## Verification
 

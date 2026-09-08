@@ -1,0 +1,2 @@
+-- Intentionally empty application-schema baseline.
+-- Drizzle creates and records its migration ledger when this file is applied.
