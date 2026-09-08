@@ -14,7 +14,7 @@ describe("offline migration baseline", () => {
     const result = await client.query<{ count: string }>(
       'select count(*)::text as count from "drizzle"."__drizzle_migrations"',
     );
-    expect(Number(result.rows[0]?.count)).toBe(1);
+    expect(Number(result.rows[0]?.count)).toBe(2);
     await client.close();
   });
 });

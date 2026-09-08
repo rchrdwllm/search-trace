@@ -1,5 +1,7 @@
 # Implementation Handoff: Project Foundation
 
+> **Reconciliation note (SPEC 003, 2026-09-08):** Authentication initially replaced the shell at `/dashboard` and instructed the root resolver to omit it. The private dashboard now composes `AppShell` through `app/dashboard/layout.tsx`; `/` remains an authentication redirect in production, while the foundation composition remains available to the existing offline test suite.
+
 ## Starting inventory
 
 - Existing app: `app/layout.tsx`, `app/page.tsx`, `app/globals.css`, `next.config.ts`, strict `tsconfig.json`, Tailwind v4, Next.js 16.3.4, React 19.2.8, Bun 1.4.2.

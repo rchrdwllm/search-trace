@@ -6,7 +6,13 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  currentLocation = "Foundation overview",
+}: {
+  children: ReactNode;
+  currentLocation?: string;
+}) {
   return (
     <>
       <a
@@ -25,7 +31,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <AppSidebar />
           <SidebarInset id="main-content" tabIndex={-1}>
             <div className="min-w-0 p-4 md:p-6">
-              <AppHeader />
+              <AppHeader currentLocation={currentLocation} />
               <div className="flex min-w-0 flex-1 flex-col gap-4">{children}</div>
             </div>
           </SidebarInset>

@@ -5,12 +5,12 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 
-export function AppBreadcrumbs() {
+export function AppBreadcrumbs({ currentLocation }: { currentLocation: string }) {
   return (
     <Breadcrumb aria-label="Current location">
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbPage>Foundation overview</BreadcrumbPage>
+          <BreadcrumbPage>{currentLocation}</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
