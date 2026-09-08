@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 0,
-      "tag": "0000_initial_baseline",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1778265600000,
-      "tag": "0001_better_auth",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1788849048874,
-      "tag": "0002_stormy_nebula",
+      "when": 1788854091089,
+      "tag": "0000_flimsy_magneto",
       "breakpoints": true
     }
   ]
