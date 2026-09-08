@@ -4,6 +4,7 @@ import { getTRPCCaller } from "@/trpc/server";
 import { OpportunityStatusBadge } from "@/components/opportunities/opportunity-status-badge";
 import { OpportunityDeleteDialog } from "@/components/opportunities/opportunity-delete-dialog";
 import { ResumeSection } from "@/components/resumes/resume-section";
+import { RequirementSection } from "@/components/requirements/requirement-section";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -158,6 +159,11 @@ export default async function OpportunityDetailPage({
       </div>
 
       <ResumeSection opportunityId={opportunity.id} />
+
+      <RequirementSection
+        opportunityId={opportunity.id}
+        jobDescription={opportunity.jobDescription}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
-import { boolean, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import type { OpportunityStatus } from "@/lib/validations/opportunity";
 import type { ExtractionState } from "@/lib/validations/resume";
+import type { RequirementCategory } from "@/lib/validations/requirement";
 
 /** Better Auth records use public-schema tables but are server-only and Data API restricted. */
 
@@ -124,4 +125,76 @@ export const resumes = pgTable(
 export type Resume = typeof resumes.$inferSelect;
 export type NewResume = typeof resumes.$inferInsert;
 
-export const schema = { user, session, account, verification, opportunities, resumes };
+export const requirements = pgTable(
+  "requirements",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    opportunityId: text("opportunity_id")
+      .notNull()
+      .references(() => opportunities.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    category: text("category").$type<RequirementCategory>().notNull(),
+    jobDescriptionExcerpt: text("job_description_excerpt").notNull(),
+    coverageState: text("coverage_state"),
+    orderIndex: integer("order_index").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("requirements_opportunity_id_idx").on(table.opportunityId),
+    index("requirements_user_id_idx").on(table.userId),
+    index("requirements_opp_order_idx").on(table.opportunityId, table.orderIndex),
+  ],
+);
+
+export type Requirement = typeof requirements.$inferSelect;
+export type NewRequirement = typeof requirements.$inferInsert;
+
+export const userDailyUsage = pgTable(
+  "user_daily_usage",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    action: text("action").notNull(),
+    date: text("date").notNull(),
+    count: integer("count").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("user_daily_usage_user_id_idx").on(table.userId),
+    uniqueIndex("user_daily_usage_user_action_date_idx").on(table.userId, table.action, table.date),
+  ],
+);
+
+export type UserDailyUsage = typeof userDailyUsage.$inferSelect;
+export type NewUserDailyUsage = typeof userDailyUsage.$inferInsert;
+
+export const schema = {
+  user,
+  session,
+  account,
+  verification,
+  opportunities,
+  resumes,
+  requirements,
+  userDailyUsage,
+};
+
