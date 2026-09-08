@@ -3,6 +3,10 @@ import type { OpportunityStatus } from "@/lib/validations/opportunity";
 import type { ExtractionState } from "@/lib/validations/resume";
 import type { RequirementCategory } from "@/lib/validations/requirement";
 import type { EvidenceType } from "@/lib/validations/evidence";
+import type {
+  FeedbackProvenance,
+  FeedbackSourceType,
+} from "@/lib/validations/feedback";
 
 /** Better Auth records use public-schema tables but are server-only and Data API restricted. */
 
@@ -250,6 +254,40 @@ export const opportunityEvidence = pgTable(
 export type OpportunityEvidence = typeof opportunityEvidence.$inferSelect;
 export type NewOpportunityEvidence = typeof opportunityEvidence.$inferInsert;
 
+export const feedbackItems = pgTable(
+  "feedback_items",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    opportunityId: text("opportunity_id")
+      .notNull()
+      .references(() => opportunities.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    feedbackDate: text("feedback_date").notNull(),
+    text: text("text").notNull(),
+    sourceType: text("source_type").$type<FeedbackSourceType>().notNull(),
+    provenance: text("provenance").$type<FeedbackProvenance>().notNull(),
+    aiOptIn: boolean("ai_opt_in").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("feedback_items_opportunity_id_idx").on(table.opportunityId),
+    index("feedback_items_user_id_idx").on(table.userId),
+    index("feedback_items_opp_date_idx").on(table.opportunityId, table.feedbackDate),
+  ],
+);
+
+export type FeedbackItem = typeof feedbackItems.$inferSelect;
+export type NewFeedbackItem = typeof feedbackItems.$inferInsert;
+
 export const schema = {
   user,
   session,
@@ -261,5 +299,6 @@ export const schema = {
   userDailyUsage,
   evidenceItems,
   opportunityEvidence,
+  feedbackItems,
 };
 
