@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SearchTrace
 
-## Getting Started
+SearchTrace is a private evidence-review product in development. This foundation release provides an accessible, service-independent application shell and honest placeholder states for later opportunity and résumé evidence workflows.
 
-First, run the development server:
+## Local development
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Requirements: Node.js 20.9+, Bun 1.4.2 (or a compatible Bun release), and no Supabase account for the foundation checks.
+
+```powershell
+bun install --frozen-lockfile
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The root page renders without `.env.local`. The committed [.env.example](.env.example) documents the only public Supabase variables reserved for a later integration feature. Copy it to `.env.local` only when exercising those factories locally; do not add secret or service-role keys.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Verification
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```powershell
+bun run check          # lint, strict typecheck, one-shot Jest; offline
+bun run test           # one-shot Jest
+bun run test:coverage  # one-shot Jest with V8 coverage
+bun run test:watch     # local watch mode
+bun run build          # separate production compilation gate
+```
 
-## Learn More
+The automated gate requires no network, credentials, live backend, or remote product data. To verify failure propagation, temporarily change a local assertion, run `bun run check`, observe the named nonzero failure, and restore the assertion without committing the intentional change.
 
-To learn more about Next.js, take a look at the following resources:
+Jest/jsdom verifies semantics, keyboard behavior, state communication, static boundaries, and axe results. It does not prove real CSS layout, responsive overflow, media-query appearance, visible focus-ring styling, or 200% zoom. Those checks belong in a browser using the repeatable widths 320, 375, 768, 1024, and 1440 CSS pixels, plus 200% zoom, keyboard navigation, mobile sidebar open/close, and system appearance changes.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scope boundaries
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The shell intentionally does not provide authentication, route protection, persistence, database queries, storage, résumé extraction, AI analysis, or a functional opportunity workflow. The future navigation items are disabled and visibly described as unavailable. The shell and root layout do not import Supabase factories or perform remote calls.
 
-## Deploy on Vercel
+The browser and server Supabase factories are isolated under `lib/supabase/`, validate public configuration lazily, and use only the publishable key. A later authentication feature must re-check current `@supabase/ssr` guidance before adding Proxy/cookie refresh behavior. A later data feature must add ownership checks, RLS, private storage, and cross-user authorization tests before queries are enabled.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## ShadCN provenance
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The shell began with the mandated `@efferd/app-shell-4` registry block. Its provider, inset sidebar, collapsible navigation, header trigger, and padded main structure were retained; demo commerce, account, remote-avatar, notification, changelog, and fake-route content was removed. The full generated-versus-retained audit is recorded in [implementation-handoff.md](specs/001-project-foundation/implementation-handoff.md).

@@ -4,7 +4,7 @@
 **Target delivery:** Two weeks; optional polish in weeks three to four  
 **Product type:** Private, deployed web application  
 **Primary user:** A job seeker applying for software roles  
-**Working stack:** Next.js, TypeScript, Drizzle ORM, Supabase Postgres/Auth/Storage, Tailwind CSS, Zod, one structured-output AI provider, Vercel
+**Working stack:** Next.js, TypeScript, Drizzle ORM, Supabase Postgres/Auth/Storage, Tailwind CSS, shadcn/ui, Radix UI, Lucide React, Zod, one structured-output AI provider, Vercel
 
 ## 1. Executive Summary
 
@@ -166,6 +166,12 @@ flowchart LR
   S --> X[PDF/DOCX text extraction]
   S --> A[Structured-output AI provider]
 ```
+
+### UI Component System
+
+- The interface uses shadcn/ui components styled with Tailwind CSS.
+- Interactive primitives such as dialogs, menus, selects, tabs, and accessible form controls use Radix UI through shadcn/ui where applicable.
+- Lucide React is the standard icon library; custom icon assets are not required for the MVP.
 
 ### Core Data Model
 

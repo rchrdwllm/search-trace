@@ -1,6 +1,6 @@
 <!--
 Sync Impact Report
-- Version change: unratified scaffold -> 1.0.0
+- Version change: 1.0.0 -> 1.1.0
 - Modified principles:
   - Placeholder Principle 1 -> I. Evidence Before Inference
   - Placeholder Principle 2 -> II. Human Review and Control
@@ -10,6 +10,8 @@ Sync Impact Report
 - Added sections:
   - Product and Technical Constraints
   - Development Workflow and Quality Gates
+- Modified governance guidance:
+  - V. Lean, Testable Delivery -> adds a mandatory spec-named test directory convention
 - Removed sections: none
 - Follow-up TODOs: none
 -->
@@ -57,7 +59,11 @@ the simplest design that satisfies the current acceptance criteria. Security bou
 structured AI contracts, extraction states, citation integrity, and the primary user journey MUST
 have automated or fixture-based verification proportionate to their risk. A feature is not
 complete merely because its happy path renders; its authorization, validation, failure, and user
-review behavior MUST also meet the governing requirements.
+review behavior MUST also meet the governing requirements. Automated tests MUST live in the
+repository's `tests/` directory. Each immediate child directory of `tests/` MUST be named after
+the specification whose behavior it tests, using the specification identifier as the directory
+name (for example, `tests/001-project-foundation/`). Tests that do not map to a single feature
+specification MAY live directly under `tests/`.
 
 ## Product and Technical Constraints
 
@@ -114,4 +120,4 @@ PATCH for non-semantic clarification. Compliance MUST be reviewed during specifi
 implementation review, and release readiness. Any exception MUST be documented with scope,
 rationale, risk, owner, and expiry date; silent exceptions are prohibited.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-08 | **Last Amended**: 2026-09-08
+**Version**: 1.1.0 | **Ratified**: 2026-09-08 | **Last Amended**: 2026-09-08
