@@ -5,6 +5,7 @@ import { OpportunityStatusBadge } from "@/components/opportunities/opportunity-s
 import { OpportunityDeleteDialog } from "@/components/opportunities/opportunity-delete-dialog";
 import { ResumeSection } from "@/components/resumes/resume-section";
 import { RequirementSection } from "@/components/requirements/requirement-section";
+import { OpportunityEvidenceSection } from "@/components/evidence/opportunity-evidence-section";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -159,6 +160,8 @@ export default async function OpportunityDetailPage({
       </div>
 
       <ResumeSection opportunityId={opportunity.id} />
+
+      <OpportunityEvidenceSection opportunityId={opportunity.id} />
 
       <RequirementSection
         opportunityId={opportunity.id}

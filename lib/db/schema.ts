@@ -2,6 +2,7 @@ import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex } from "
 import type { OpportunityStatus } from "@/lib/validations/opportunity";
 import type { ExtractionState } from "@/lib/validations/resume";
 import type { RequirementCategory } from "@/lib/validations/requirement";
+import type { EvidenceType } from "@/lib/validations/evidence";
 
 /** Better Auth records use public-schema tables but are server-only and Data API restricted. */
 
@@ -187,6 +188,68 @@ export const userDailyUsage = pgTable(
 export type UserDailyUsage = typeof userDailyUsage.$inferSelect;
 export type NewUserDailyUsage = typeof userDailyUsage.$inferInsert;
 
+export const evidenceItems = pgTable(
+  "evidence_items",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    type: text("type").$type<EvidenceType>().notNull(),
+    sourceUrl: text("source_url"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("evidence_items_user_id_idx").on(table.userId),
+    index("evidence_items_user_updated_idx").on(table.userId, table.updatedAt),
+  ],
+);
+
+export type EvidenceItem = typeof evidenceItems.$inferSelect;
+export type NewEvidenceItem = typeof evidenceItems.$inferInsert;
+
+export const opportunityEvidence = pgTable(
+  "opportunity_evidence",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    opportunityId: text("opportunity_id")
+      .notNull()
+      .references(() => opportunities.id, { onDelete: "cascade" }),
+    evidenceItemId: text("evidence_item_id")
+      .notNull()
+      .references(() => evidenceItems.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("opportunity_evidence_opp_evidence_idx").on(
+      table.opportunityId,
+      table.evidenceItemId,
+    ),
+    index("opportunity_evidence_opportunity_id_idx").on(table.opportunityId),
+    index("opportunity_evidence_evidence_item_id_idx").on(table.evidenceItemId),
+    index("opportunity_evidence_user_id_idx").on(table.userId),
+  ],
+);
+
+export type OpportunityEvidence = typeof opportunityEvidence.$inferSelect;
+export type NewOpportunityEvidence = typeof opportunityEvidence.$inferInsert;
+
 export const schema = {
   user,
   session,
@@ -196,5 +259,7 @@ export const schema = {
   resumes,
   requirements,
   userDailyUsage,
+  evidenceItems,
+  opportunityEvidence,
 };
 
