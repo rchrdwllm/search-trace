@@ -26,6 +26,7 @@ SearchTrace is an **evidence-gap analyzer**, strictly distinguishing between sub
 ### Supported MVP Workflows
 1. **Opportunity Management**: Create, view, edit, list, and delete targeted job opportunities with company, role, full pasted job description, optional HTTPS source link, and status tracking (`draft`, `applied`, `interviewing`, `rejected`, `closed`).
 2. **Private Résumé Upload & Review**: Upload a targeted résumé file (PDF or DOCX, up to 10 MB) per opportunity, perform server-side magic byte validation, extract plain text via `unpdf` or `mammoth`, review and correct extracted text, download original files via short-lived signed URLs, and manage explicit, default-off AI opt-in consent.
+3. **Supporting Evidence & Opportunity Attachment**: Catalog reusable proof of experience (`project`, `accomplishment`, `portfolio_link`) in a personal library independently of opportunities, select and detach proof items for specific opportunities, perform in-context creation, and cascade delete safely with multi-opportunity warnings.
 
 ### Scope & Explicit Non-Goals (Release Blockers)
 - **NOT** an ATS score generator, interview probability calculator, or hiring predictor.
@@ -181,6 +182,8 @@ search-trace/
 │   │   ├── resume-review-editor.tsx            # Plain text review and editing area
 │   │   ├── resume-section.tsx                  # Root opportunity résumé management section
 │   │   └── resume-upload-dropzone.tsx          # Drag-and-drop & file picker upload zone
+│   ├── evidence/                               # Supporting evidence UI components (card, dialog, picker, section)
+│   ├── requirements/                           # Requirement extraction & curation UI components
 │   └── ui/                                     # Checked-in Shadcn primitives (alert, dialog, button, card, etc.)
 ├── docs/                                       # Product documentation & PRD
 │   ├── authentication.md                       # Better Auth architecture & security rules
@@ -188,7 +191,9 @@ search-trace/
 ├── drizzle/                                    # Generated Drizzle migrations & metadata ledger
 │   ├── 0000_init_auth_tables.sql
 │   ├── 0001_add_opportunities_table.sql
-│   └── 0002_add_resumes_table.sql
+│   ├── 0002_add_resumes_table.sql
+│   ├── 0003_add_requirements_table.sql
+│   └── 0004_add_evidence_tables.sql
 ├── lib/
 │   ├── auth.ts                                 # Server-only Better Auth instance
 │   ├── auth-client.ts                          # Client-safe Better Auth client (createAuthClient)
@@ -197,7 +202,7 @@ search-trace/
 │   │   ├── config.ts                           # Validates DATABASE_URL
 │   │   ├── index.ts                            # Drizzle database client factory (server-only)
 │   │   └── schema.ts                           # Canonical Drizzle database schema
-│   ├── extraction/                             # Server-side document text extraction
+│   ├── extraction/                             # Server-side document text extraction & citation verification
 │   │   ├── magic-bytes.ts                      # Magic byte signature sniffing (PDF/DOCX)
 │   │   └── parser.ts                           # unpdf and mammoth text extraction pipelines
 │   ├── storage/                                # Storage abstraction layer
@@ -207,7 +212,9 @@ search-trace/
 │   │   ├── config.ts                           # Public Supabase config validation
 │   │   └── server.ts                           # Server-side Supabase client (server-only)
 │   ├── validations/                            # Zod validation schemas
+│   │   ├── evidence.ts                         # Supporting evidence & association schemas
 │   │   ├── opportunity.ts                      # Opportunity input and status schemas
+│   │   ├── requirement.ts                      # Requirement item & extraction schemas
 │   │   └── resume.ts                           # Résumé constraints and mutation schemas
 │   └── utils.ts                                # Shared utility functions (cn)
 ├── proxy.ts                                    # Next.js 16 proxy routing middleware (/dashboard cookie prefilter)
@@ -219,20 +226,26 @@ search-trace/
 │   ├── 003-user-authentication/                # Better Auth integration & session contracts
 │   ├── 004-type-safe-api-migration/            # tRPC v11 migration & boundary inventory
 │   ├── 005-opportunity-management/             # Opportunity CRUD, schemas & UI contracts
-│   └── 006-private-resume-upload/              # Private résumé upload, storage & review
+│   ├── 006-private-resume-upload/              # Private résumé upload, storage & review
+│   ├── 007-requirement-extraction/             # Requirement extraction, Vercel AI SDK & Gemini 3.6 Flash
+│   └── 008-supporting-evidence/                # Reusable evidence library & opportunity attachments
 ├── tests/                                      # Test suites partitioned by spec feature
 │   ├── 001-project-foundation/                 # Shell, accessibility, primitives, and mock isolation
 │   ├── 002-drizzle-supabase-setup/             # DB configs, static boundaries, migration tests
 │   ├── 004-type-safe-api-migration/            # System router, auth forms, boundary inventory
 │   ├── 005-opportunity-management/             # Opportunity router, forms, list, accessibility
-│   └── 006-private-resume-upload/              # Résumé upload route, router, parser, storage
+│   ├── 006-private-resume-upload/              # Résumé upload route, router, parser, storage
+│   ├── 007-requirement-extraction/             # Citation verification, AI extractor, rate limiter, UI
+│   └── 008-supporting-evidence/                # Evidence router, dual-ownership, cascade warning, UI
 ├── trpc/                                       # Application tRPC API layer
 │   ├── client.tsx                              # Client-side tRPC React Query provider & hooks
 │   ├── init.ts                                 # tRPC context, procedures, error formatting
 │   ├── query-client.ts                         # Shared TanStack QueryClient factory
 │   ├── routers/                                # Domain routers
 │   │   ├── _app.ts                             # Root AppRouter definition
+│   │   ├── evidence.ts                         # Supporting evidence CRUD & opportunity attachments
 │   │   ├── opportunity.ts                      # Opportunity CRUD procedures
+│   │   ├── requirement.ts                      # AI requirement extraction & curation procedures
 │   │   ├── resume.ts                           # Résumé review, signed URL, opt-in procedures
 │   │   └── system.ts                           # System health and session procedures
 │   └── server.tsx                              # Server Component caller (getTRPCCaller)
@@ -252,6 +265,8 @@ SearchTrace utilizes **tRPC v11** for all structured client-server data interact
      - `system`: System health and authenticated session introspection.
      - `opportunity`: CRUD operations for target job opportunities (`list`, `byId`, `create`, `update`, `delete`).
      - `resume`: Résumé lifecycle procedures (`getByOpportunityId`, `updateReviewedText`, `setAiOptIn`, `getDownloadUrl`, `retryExtraction`, `delete`).
+     - `requirement`: AI requirement extraction, review, manual curation, daily rate limiting.
+     - `evidence`: Evidence library CRUD (`list`, `byId`, `create`, `update`, `delete`), opportunity attachments (`listByOpportunityId`, `attach`, `detach`, `createAndAttach`), and cascade warning queries (`getAttachedOpportunities`).
    - Dedicated Route Handler: `POST /api/opportunities/[opportunityId]/resume` handles binary `multipart/form-data` uploads (up to 10 MB) to avoid serializing large files over tRPC JSON payloads.
 
 2. **Consumption Rules**:
@@ -280,7 +295,11 @@ Drizzle ORM is the **sole owner** of application schema definitions and migratio
    - Domain tables:
      - `opportunities`: user-scoped via `userId -> user.id (CASCADE)`. Columns: `company`, `role`, `jobDescription`, `sourceUrl`, `status` (`draft`, `applied`, `interviewing`, `rejected`, `closed`), timestamps.
      - `resumes`: 1-to-1 with `opportunities` via `opportunityId -> opportunities.id (CASCADE, UNIQUE)`, user-scoped via `userId -> user.id (CASCADE)`. Columns: `fileName`, `fileSize`, `fileType`, `storagePath`, `extractionState` (`pending`, `ready`, `failed`), `extractedText`, `reviewedText`, `aiOptIn` (default `false`), timestamps.
-     - Planned tables: `evidence_items`, `feedback_items`, `requirements`.
+     - `requirements`: user-scoped and opportunity-scoped via `opportunityId -> opportunities.id (CASCADE)` and `userId -> user.id (CASCADE)`. Columns: `title`, `category`, `jobDescriptionExcerpt`, `coverageState`, `orderIndex`, timestamps.
+     - `user_daily_usage`: tracks daily analysis limits per user/action.
+     - `evidence_items`: user-scoped via `userId -> user.id (CASCADE)`. Columns: `title`, `description`, `type` (`project`, `accomplishment`, `portfolio_link`), `sourceUrl`, timestamps.
+     - `opportunity_evidence`: user-scoped join table linking `opportunities` and `evidence_items` via `opportunityId -> opportunities.id (CASCADE)` and `evidenceItemId -> evidence_items.id (CASCADE)` with unique composite `(opportunityId, evidenceItemId)`.
+     - Planned tables: `feedback_items`.
 
 2. **Migration Discipline**:
    - **NEVER** run `drizzle-kit push`.

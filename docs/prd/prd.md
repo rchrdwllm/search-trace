@@ -14,7 +14,7 @@ Job seekers can collect job descriptions and revise a résumé, but they lack a 
 
 ### Proposed Solution
 
-SearchTrace analyzes **one job opportunity at a time**. A user uploads the résumé used for that opportunity, pastes its job description, optionally adds project evidence and employer feedback, then reviews an AI-generated, cited assessment of supported, weak, and missing requirements plus one practical next action.
+SearchTrace analyzes **one job opportunity at a time** while letting the user maintain reusable evidence across their search. A user uploads the résumé used for an opportunity, pastes its job description, selects relevant projects and accomplishments from a personal evidence library, optionally adds employer feedback, then reviews an AI-generated, cited assessment of supported, weak, and missing requirements plus one practical next action.
 
 The product promise is:
 
@@ -26,6 +26,7 @@ SearchTrace is an evidence-gap analyzer, not a job-search CRM, résumé writer, 
 
 - A new user can sign in, create an opportunity, upload a PDF or DOCX résumé, and request an analysis in under five minutes using a prepared test fixture.
 - Every AI-generated requirement and coverage decision includes an excerpt from the supplied job description, résumé, project evidence, or opted-in feedback.
+- A user can create an evidence item once, reuse it across multiple opportunities, and independently choose whether it is included in each opportunity’s analysis.
 - The user can correct AI-drafted requirements and coverage states before saving the assessment.
 - The product shows no ATS score, interview probability, or claim that an action will improve hiring outcomes.
 - Authorization tests confirm that one signed-in user cannot access another user’s opportunities or private résumé files.
@@ -42,10 +43,11 @@ SearchTrace is an evidence-gap analyzer, not a job-search CRM, résumé writer, 
 1. The user signs in with email and password and reaches a private dashboard.
 2. They create an opportunity with a company, role title, and pasted job description.
 3. They upload one PDF or DOCX résumé for that opportunity. SearchTrace extracts the text and lets them review or edit it.
-4. They optionally add short project/accomplishment evidence and employer feedback. Feedback is stored as either an exact quote or a personal summary.
-5. After opting in to AI use of the reviewed résumé (and optionally feedback), the user requests an analysis.
-6. SearchTrace drafts role requirements with job-description excerpts, then drafts a coverage state for each requirement using cited user evidence.
-7. The user reviews, edits, accepts, or rejects the drafts. The saved result shows coverage counts and exactly one bounded next action.
+4. They create or reuse projects, accomplishments, and portfolio links from their personal evidence library, then select the items relevant to this opportunity.
+5. They optionally add opportunity-specific employer feedback, stored as either an exact quote or a personal summary.
+6. After opting in to AI use of the reviewed résumé (and optionally feedback), the user requests an analysis.
+7. SearchTrace drafts role requirements with job-description excerpts, then drafts a coverage state for each requirement using the résumé and selected evidence.
+8. The user reviews, edits, accepts, or rejects the drafts. The saved result shows coverage counts and exactly one bounded next action.
 
 ### User Stories and Acceptance Criteria
 
@@ -84,20 +86,34 @@ As a job seeker, I want to upload the résumé I used so that the assessment is 
 - Files can be downloaded only through a short-lived, authenticated link.
 - Replacing or deleting a résumé removes its prior private object after confirmation. Multi-version résumé libraries and résumé-to-outcome comparisons are deferred.
 
-#### Story 4 — Add evidence and preserve employer feedback
+#### Story 4 — Maintain and reuse supporting evidence
 
-As a job seeker, I want to add relevant project evidence and feedback so that the analysis has context beyond a résumé.
+As a job seeker, I want to maintain projects and accomplishments once and reuse them across opportunities so that I do not repeatedly enter the same proof.
 
 **Acceptance criteria**
 
-- The user may add per-opportunity evidence with a title, short description, and optional `https:` link. Supported types are `project`, `accomplishment`, and `portfolio_link`.
+- The user has a personal evidence library containing user-owned items with a title, short description, and optional `https:` link. Supported types are `project`, `accomplishment`, and `portfolio_link`.
+- The user can create, view, edit, and delete evidence independently of any opportunity.
+- The same evidence item can be selected for zero, one, or many opportunities without duplicating its content.
+- From an opportunity, the user can select or deselect evidence items for that opportunity’s next analysis.
+- The opportunity interface clearly distinguishes available library evidence from evidence currently selected for analysis.
+- Editing an evidence item updates the library item everywhere it is available and affects future analyses; it does not silently rewrite a previously saved analysis.
+- Deleting an evidence item removes its opportunity selections and excludes it from future analyses after confirmation.
+- The MVP does not automatically fetch or inspect an evidence URL, recommend evidence items, or map evidence to individual requirements before analysis.
+
+#### Story 5 — Preserve employer feedback
+
+As a job seeker, I want to preserve feedback for a specific opportunity so that it can be considered as a reported signal without being treated as proven causality.
+
+**Acceptance criteria**
+
 - The user may add feedback with a date, text, source type (`recruiter_feedback`, `rejection_note`, `interview_feedback`, or `user_summary`), and a required label of `exact_quote` or `personal_summary`.
 - The interface asks users not to include recruiter contact details, email headers, signatures, or attachments.
 - Feedback is preserved as a reported signal. The product never presents it as proof of a rejection cause.
 - Feedback is excluded from AI requests by default; the user can explicitly opt it in for that opportunity.
-- Evidence and feedback can be edited or deleted. Deletion removes them from future analyses.
+- Feedback can be edited or deleted. Deletion removes it from future analyses.
 
-#### Story 5 — Review an explainable evidence-gap analysis
+#### Story 6 — Review an explainable evidence-gap analysis
 
 As a job seeker, I want to review and correct an assessment so that I can distinguish strong proof from assumptions and choose a sensible next step.
 
@@ -105,7 +121,8 @@ As a job seeker, I want to review and correct an assessment so that I can distin
 
 - The user explicitly starts analysis only after the résumé text is ready and they acknowledge the provider data-use disclosure.
 - The AI drafts 5–12 requirements in the categories `technical_skill`, `experience`, `education`, `responsibility`, or `other`; every requirement includes an exact job-description excerpt.
-- The AI drafts one state per requirement: `supported`, `weak`, `missing`, or `unknown`. Each `supported` or `weak` result cites a résumé or user-entered-evidence excerpt; a `missing` result states what supplied evidence was not found.
+- The AI receives only evidence items selected for the current opportunity; unselected library items are not sent.
+- The AI drafts one state per requirement: `supported`, `weak`, `missing`, or `unknown`. Each `supported` or `weak` result cites a résumé or selected-evidence excerpt; a `missing` result states what supplied evidence was not found.
 - The user can edit, delete, or manually add requirements and can change every coverage state before saving.
 - The results page shows counts by coverage state, the cited source excerpts, and exactly one proposed next action tied to a weak or missing requirement.
 - The next action is phrased as a bounded improvement task, such as “add a deployed-project example that demonstrates API integration,” never as a promise of an interview or offer.
@@ -137,7 +154,7 @@ For a single opportunity, the request includes only:
 
 - The stored job-description text.
 - The user-reviewed résumé text after résumé-specific opt-in.
-- The opportunity’s manually entered evidence.
+- Only reusable evidence items explicitly selected for the current opportunity.
 - Feedback only when the user has opted that feedback into the request.
 
 Before the first request, the user acknowledges that enabled content is sent to the configured AI provider. The UI identifies the included sources. The server does not log raw résumés, job descriptions, feedback text, prompts, or model output in operational logs.
@@ -176,11 +193,12 @@ flowchart LR
 | `profiles` | User identity and AI-disclosure acceptance metadata. |
 | `opportunities` | Owner, company, role, job description, optional URL, status, and analysis timestamp. |
 | `resumes` | One current résumé per opportunity: private path, file metadata, extracted/reviewed text, extraction state, and AI opt-in. |
-| `evidence_items` | Opportunity-scoped project, accomplishment, or portfolio evidence. |
+| `evidence_items` | Reusable user-owned project, accomplishment, or portfolio evidence; it is not owned by one opportunity. |
+| `opportunity_evidence` | User-owned many-to-many selection of evidence items included for a particular opportunity, with a unique opportunity/evidence pair. |
 | `feedback_items` | Opportunity-scoped feedback with source type, quotation/summary provenance, and AI opt-in. |
 | `requirements` | User-approved requirement, category, job-description excerpt, coverage state, and rationale/citations. |
 
-No events, diagnostic history, experiments, requirement-evidence join table, résumé-version library, or audit-log entity is required for the MVP.
+No events, diagnostic history, experiments, requirement-to-evidence join table, résumé-version library, or audit-log entity is required for the MVP. The `opportunity_evidence` table selects reusable inputs for an opportunity; it does not pre-assign evidence to individual requirements.
 
 ### Data Access and Migrations
 
@@ -190,14 +208,14 @@ No events, diagnostic history, experiments, requirement-evidence join table, ré
 - Drizzle schema definitions are the application’s canonical typed representation of tables, columns, relationships, indexes, and enums.
 - Version-controlled Drizzle migrations create and evolve the application schema; production schema changes must not rely on undocumented dashboard edits.
 - Database access remains server-only. Client components never receive database credentials or create direct Drizzle connections.
-- Repository or query functions require the authenticated user ID and scope every read and mutation to that owner.
+- Repository or query functions require the authenticated user ID and scope every read and mutation to that owner. Creating an `opportunity_evidence` relationship requires ownership of both the opportunity and the evidence item.
 - Supabase continues to provide authentication, Postgres hosting, row-level security, and private résumé storage; Drizzle does not replace those services.
 
 ### Security and Privacy
 
 - Supabase Auth protects workspace routes; every user-owned table has `user_id` and row-level security.
-- Protected tRPC procedures verify the authenticated Supabase user before calling Drizzle. Every Drizzle query verifies ownership of the opportunity before accessing its résumé, evidence, feedback, or requirements.
-- Cross-user tests cover both the public Supabase access boundary and protected tRPC procedures, including attempts to read, update, delete, or relate another user’s records.
+- Protected tRPC procedures verify the authenticated Supabase user before calling Drizzle. Every Drizzle query verifies ownership before accessing an opportunity, résumé, reusable evidence item, feedback item, requirement, or opportunity-evidence relationship.
+- Cross-user tests cover both the public Supabase access boundary and protected tRPC procedures, including attempts to read, update, delete, select, or relate another user’s records.
 - Database connection credentials remain server-only and are never exposed through browser bundles, logs, or error messages.
 - Résumé objects use user-scoped private paths and authenticated, short-lived download URLs. Permanent public URLs are prohibited.
 - All form inputs and AI responses are validated server-side. User content is rendered as plain text.
@@ -211,7 +229,7 @@ No events, diagnostic history, experiments, requirement-evidence join table, ré
 
 - Create the deployed Next.js application, email authentication, protected routes, tRPC context and protected-procedure middleware, Drizzle schema and migrations, and RLS/ownership tests.
 - Build opportunity CRUD, private PDF/DOCX upload, extraction, and reviewed-text states.
-- Build the basic opportunity detail interface and evidence/feedback forms.
+- Build the reusable evidence library, per-opportunity evidence selection, and opportunity-specific feedback forms.
 
 **Week 2 — Explainable analysis and polish**
 

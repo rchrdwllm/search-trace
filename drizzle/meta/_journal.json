@@ -29,6 +29,13 @@
       "when": 1788870288048,
       "tag": "0003_add_requirements_table",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788873049906,
+      "tag": "0004_add_evidence_tables",
+      "breakpoints": true
     }
   ]
 }

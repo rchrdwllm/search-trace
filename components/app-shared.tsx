@@ -25,6 +25,11 @@ export const navGroups: SidebarNavGroup[] = [
         isActive: true,
         icon: "overview",
       },
+      {
+        title: "Evidence Library",
+        path: "/dashboard/evidence",
+        icon: "workspace",
+      },
     ],
   },
   {
@@ -32,7 +37,6 @@ export const navGroups: SidebarNavGroup[] = [
     description: "Future screens are not available in this foundation release.",
     items: [
       { title: "Opportunity review", disabled: true, icon: "opportunity" },
-      { title: "Evidence workspace", disabled: true, icon: "workspace" },
     ],
   },
 ];
