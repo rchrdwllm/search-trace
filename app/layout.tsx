@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { TRPCClientProvider } from "@/trpc/client";
 // import { Geist } from "next/font/google";
 
 // const geistSans = Geist({ subsets: ["latin"] });
@@ -19,7 +20,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full"><TRPCClientProvider>{children}</TRPCClientProvider></body>
     </html>
   );
 }
