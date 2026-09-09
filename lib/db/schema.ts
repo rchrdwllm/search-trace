@@ -7,6 +7,7 @@ import type {
   FeedbackProvenance,
   FeedbackSourceType,
 } from "@/lib/validations/feedback";
+import type { CoverageState, CitationSource } from "@/lib/validations/analysis";
 
 /** Better Auth records use public-schema tables but are server-only and Data API restricted. */
 
@@ -74,6 +75,10 @@ export const opportunities = pgTable(
     jobDescription: text("job_description").notNull(),
     sourceUrl: text("source_url"),
     status: text("status").$type<OpportunityStatus>().notNull().default("draft"),
+    lastAnalyzedAt: timestamp("last_analyzed_at", { withTimezone: true }),
+    nextActionText: text("next_action_text"),
+    nextActionRequirementId: text("next_action_requirement_id"),
+    analysisLimitations: text("analysis_limitations"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -84,6 +89,7 @@ export const opportunities = pgTable(
   (table) => [
     index("opportunities_user_id_idx").on(table.userId),
     index("opportunities_user_updated_idx").on(table.userId, table.updatedAt),
+    index("opportunities_analyzed_idx").on(table.userId, table.lastAnalyzedAt),
   ],
 );
 
@@ -145,7 +151,12 @@ export const requirements = pgTable(
     title: text("title").notNull(),
     category: text("category").$type<RequirementCategory>().notNull(),
     jobDescriptionExcerpt: text("job_description_excerpt").notNull(),
-    coverageState: text("coverage_state"),
+    coverageState: text("coverage_state").$type<CoverageState>(),
+    citationSource: text("citation_source").$type<CitationSource>(),
+    citationExcerpt: text("citation_excerpt"),
+    citationSourceTitle: text("citation_source_title"),
+    missingEvidenceNotes: text("missing_evidence_notes"),
+    coverageRationale: text("coverage_rationale"),
     orderIndex: integer("order_index").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -158,6 +169,7 @@ export const requirements = pgTable(
     index("requirements_opportunity_id_idx").on(table.opportunityId),
     index("requirements_user_id_idx").on(table.userId),
     index("requirements_opp_order_idx").on(table.opportunityId, table.orderIndex),
+    index("requirements_coverage_state_idx").on(table.opportunityId, table.coverageState),
   ],
 );
 

@@ -7,6 +7,7 @@ import { ResumeSection } from "@/components/resumes/resume-section";
 import { RequirementSection } from "@/components/requirements/requirement-section";
 import { OpportunityEvidenceSection } from "@/components/evidence/opportunity-evidence-section";
 import { OpportunityFeedbackSection } from "@/components/feedback/opportunity-feedback-section";
+import { AnalysisSection } from "@/components/analysis/analysis-section";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -165,6 +166,8 @@ export default async function OpportunityDetailPage({
       <OpportunityEvidenceSection opportunityId={opportunity.id} />
 
       <OpportunityFeedbackSection opportunityId={opportunity.id} />
+
+      <AnalysisSection opportunityId={opportunity.id} />
 
       <RequirementSection
         opportunityId={opportunity.id}

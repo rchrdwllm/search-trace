@@ -46,6 +46,10 @@ CREATE TABLE "opportunities" (
 	"job_description" text NOT NULL,
 	"source_url" text,
 	"status" text DEFAULT 'draft' NOT NULL,
+	"last_analyzed_at" timestamp with time zone,
+	"next_action_text" text,
+	"next_action_requirement_id" text,
+	"analysis_limitations" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -66,6 +70,11 @@ CREATE TABLE "requirements" (
 	"category" text NOT NULL,
 	"job_description_excerpt" text NOT NULL,
 	"coverage_state" text,
+	"citation_source" text,
+	"citation_excerpt" text,
+	"citation_source_title" text,
+	"missing_evidence_notes" text,
+	"coverage_rationale" text,
 	"order_index" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
@@ -151,6 +160,7 @@ CREATE INDEX "feedback_items_user_id_idx" ON "feedback_items" USING btree ("user
 CREATE INDEX "feedback_items_opp_date_idx" ON "feedback_items" USING btree ("opportunity_id","feedback_date");--> statement-breakpoint
 CREATE INDEX "opportunities_user_id_idx" ON "opportunities" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "opportunities_user_updated_idx" ON "opportunities" USING btree ("user_id","updated_at");--> statement-breakpoint
+CREATE INDEX "opportunities_analyzed_idx" ON "opportunities" USING btree ("user_id","last_analyzed_at");--> statement-breakpoint
 CREATE UNIQUE INDEX "opportunity_evidence_opp_evidence_idx" ON "opportunity_evidence" USING btree ("opportunity_id","evidence_item_id");--> statement-breakpoint
 CREATE INDEX "opportunity_evidence_opportunity_id_idx" ON "opportunity_evidence" USING btree ("opportunity_id");--> statement-breakpoint
 CREATE INDEX "opportunity_evidence_evidence_item_id_idx" ON "opportunity_evidence" USING btree ("evidence_item_id");--> statement-breakpoint
@@ -158,6 +168,7 @@ CREATE INDEX "opportunity_evidence_user_id_idx" ON "opportunity_evidence" USING 
 CREATE INDEX "requirements_opportunity_id_idx" ON "requirements" USING btree ("opportunity_id");--> statement-breakpoint
 CREATE INDEX "requirements_user_id_idx" ON "requirements" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "requirements_opp_order_idx" ON "requirements" USING btree ("opportunity_id","order_index");--> statement-breakpoint
+CREATE INDEX "requirements_coverage_state_idx" ON "requirements" USING btree ("opportunity_id","coverage_state");--> statement-breakpoint
 CREATE INDEX "resumes_opportunity_id_idx" ON "resumes" USING btree ("opportunity_id");--> statement-breakpoint
 CREATE INDEX "resumes_user_id_idx" ON "resumes" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "user_daily_usage_user_id_idx" ON "user_daily_usage" USING btree ("user_id");--> statement-breakpoint
