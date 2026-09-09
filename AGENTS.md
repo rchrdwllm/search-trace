@@ -26,7 +26,10 @@ SearchTrace is an **evidence-gap analyzer**, strictly distinguishing between sub
 ### Supported MVP Workflows
 1. **Opportunity Management**: Create, view, edit, list, and delete targeted job opportunities with company, role, full pasted job description, optional HTTPS source link, and status tracking (`draft`, `applied`, `interviewing`, `rejected`, `closed`).
 2. **Private Résumé Upload & Review**: Upload a targeted résumé file (PDF or DOCX, up to 10 MB) per opportunity, perform server-side magic byte validation, extract plain text via `unpdf` or `mammoth`, review and correct extracted text, download original files via short-lived signed URLs, and manage explicit, default-off AI opt-in consent.
-3. **Supporting Evidence & Opportunity Attachment**: Catalog reusable proof of experience (`project`, `accomplishment`, `portfolio_link`) in a personal library independently of opportunities, select and detach proof items for specific opportunities, perform in-context creation, and cascade delete safely with multi-opportunity warnings.
+3. **AI Requirement Extraction & Curation**: Extract 5–12 cited candidate requirements directly from pasted job descriptions using Google Gemini 3.6 Flash via Vercel AI SDK, verify quotations against source text server-side, curate uncommitted drafts (edit, reorder, delete, add manual items), and persist confirmed requirements.
+4. **Supporting Evidence Library & Attachments**: Catalog reusable proof of experience (`project`, `accomplishment`, `portfolio_link`) in a personal library independently of opportunities, select and detach proof items for specific opportunities with `sourceUrl` forwarding, perform in-context creation, and cascade delete safely with multi-opportunity warnings.
+5. **Employer Feedback Recording & Provenance**: Record qualitative feedback from recruiters or interviewers (`rejection_email`, `interview_notes`, `recruiter_call`, `other`) per opportunity with date and provenance tracking, control separate default-off AI opt-in consent, and preserve candidate history with safe deletion confirmations.
+6. **Multi-Source Evidence-Gap Analysis & Bounded Next Action**: Compare approved requirements against reviewed résumé text, attached supporting evidence, and opted-in employer feedback. Validates authentic verbatim citations across all sources, offers a two-tier uncommitted draft review workspace, highlights evidence contribution metrics with external project links, provides deterministic coverage counts, and produces exactly **one** concrete, feasible next action with an honest AI disclaimer under a strict 5 req/user/day quota.
 
 ### Scope & Explicit Non-Goals (Release Blockers)
 - **NOT** an ATS score generator, interview probability calculator, or hiring predictor.
@@ -88,11 +91,15 @@ bun run test            # One-shot Jest test suite (NODE_OPTIONS=--experimental-
 bun run test:watch      # Interactive Jest watch mode
 bun run test:coverage   # One-shot Jest with V8 coverage report
 
-# Run a specific feature test suite
+# Run feature-specific test suites
 bun run test -- tests/005-opportunity-management/procedures/opportunity-router.test.ts
 bun run test -- tests/006-private-resume-upload/routes/upload-route.test.ts
-bun run test -- tests/006-private-resume-upload/storage/resume-storage.test.ts
-bun run test -- -t "resume router contract"
+bun run test -- tests/007-requirement-extraction/procedures/requirement-router.test.ts
+bun run test -- tests/008-supporting-evidence/procedures/evidence-router.test.ts
+bun run test -- tests/009-employer-feedback/procedures/feedback-router.test.ts
+bun run test -- tests/010-evidence-gap-analysis/procedures/analysis-router.test.ts
+bun run test -- tests/010-evidence-gap-analysis/components/analysis-views.test.tsx
+bun run test -- -t "evidence-gap analysis"
 ```
 
 ### Database & Migration Commands
@@ -126,11 +133,15 @@ BETTER_AUTH_SECRET=example_secret_must_be_at_least_32_characters_long
 BETTER_AUTH_URL=http://localhost:3000
 # Storage provider override for testing or offline dev ('memory' or default Supabase)
 STORAGE_PROVIDER=memory
+# AI provider override for testing or offline dev ('memory' or default Gemini)
+AI_PROVIDER=memory
+# Google Gemini API key (server-only; required when AI_PROVIDER=gemini)
+GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key_here
 ```
 
 ### Critical Security Rules for Environment Variables
-1. **Never import `DATABASE_URL` or `BETTER_AUTH_SECRET` in client code**. Tests strictly assert their absence from browser bundles.
-2. **Offline-First Resilience**: The application shell, storage helpers, and tests render and execute cleanly even if Supabase and Better Auth environment variables are absent. When absent or in test mode, the storage layer automatically falls back to `InMemoryResumeStorage`.
+1. **Never import `DATABASE_URL`, `BETTER_AUTH_SECRET`, or `GOOGLE_GENERATIVE_AI_API_KEY` in client code**. Tests strictly assert their absence from browser bundles.
+2. **Offline-First Resilience**: The application shell, storage helpers, AI extractors, analyzers, and tests render and execute cleanly even if Supabase, Better Auth, and Gemini environment variables are absent. When absent or in test mode, the storage layer automatically falls back to `InMemoryResumeStorage` and the AI subsystems fall back to `InMemoryAiExtractor` and `InMemoryAiAnalyzer`.
 3. **No Service-Role Key**: The application does not require or store Supabase service-role/admin keys in the client or server repositories.
 
 ---
@@ -152,10 +163,11 @@ search-trace/
 │   ├── dashboard/                              # Private workspace routes
 │   │   ├── layout.tsx                          # Dashboard layout wrapping AppShell
 │   │   ├── page.tsx                            # Dashboard landing view with opportunity list
+│   │   ├── evidence/page.tsx                   # Central supporting evidence library page
 │   │   └── opportunities/
 │   │       ├── new/page.tsx                    # Opportunity creation page
 │   │       └── [opportunityId]/
-│   │           ├── page.tsx                    # Opportunity detail view + Résumé section
+│   │           ├── page.tsx                    # Opportunity detail view (all sections coordinator)
 │   │           └── edit/page.tsx               # Opportunity editing page
 │   ├── favicon.ico
 │   ├── globals.css                             # Tailwind v4 theme & CSS variable declarations
@@ -182,8 +194,33 @@ search-trace/
 │   │   ├── resume-review-editor.tsx            # Plain text review and editing area
 │   │   ├── resume-section.tsx                  # Root opportunity résumé management section
 │   │   └── resume-upload-dropzone.tsx          # Drag-and-drop & file picker upload zone
-│   ├── evidence/                               # Supporting evidence UI components (card, dialog, picker, section)
 │   ├── requirements/                           # Requirement extraction & curation UI components
+│   │   ├── requirement-card.tsx                # Requirement card with category & citation badge
+│   │   ├── requirement-delete-dialog.tsx       # Deletion alert dialog
+│   │   ├── requirement-dialog.tsx              # Create/edit requirement dialog
+│   │   ├── requirement-draft-review.tsx        # Uncommitted AI extraction draft review workspace
+│   │   ├── requirement-list.tsx                # Confirmed requirements list
+│   │   └── requirement-section.tsx             # Root requirement management coordinator
+│   ├── evidence/                               # Supporting evidence UI components
+│   │   ├── evidence-card.tsx                   # Evidence card displaying type, title, description, link
+│   │   ├── evidence-delete-dialog.tsx          # Cascade warning deletion confirmation dialog
+│   │   ├── evidence-dialog.tsx                 # Create/edit library evidence item dialog
+│   │   ├── evidence-picker-dialog.tsx          # Opportunity attach/detach evidence selector
+│   │   └── evidence-section.tsx                # Opportunity attached evidence section coordinator
+│   ├── feedback/                               # Employer feedback UI components
+│   │   ├── feedback-card.tsx                   # Feedback item card with provenance and AI toggle
+│   │   ├── feedback-delete-dialog.tsx          # Feedback deletion confirmation dialog
+│   │   ├── feedback-dialog.tsx                 # Record feedback entry dialog
+│   │   ├── feedback-section.tsx                # Opportunity employer feedback section coordinator
+│   │   └── feedback-source-badge.tsx           # Source type badge (rejection_email, interview_notes, etc.)
+│   ├── analysis/                               # Evidence-gap analysis UI components
+│   │   ├── analysis-coverage-badge.tsx         # Accessible status badge (supported, weak, missing, unknown)
+│   │   ├── analysis-coverage-summary.tsx       # Metric cards & Evidence Utilization Panel
+│   │   ├── analysis-draft-review.tsx           # Interactive draft review & live override workspace
+│   │   ├── analysis-next-action-card.tsx       # Dedicated Next Action card with honest AI disclaimer
+│   │   ├── analysis-preflight-dialog.tsx       # Source transparency & prerequisite disclosure dialog
+│   │   ├── analysis-requirement-item.tsx       # Requirement evaluation card with verbatim citation & links
+│   │   └── analysis-section.tsx                # Root coordinator for evidence-gap analysis
 │   └── ui/                                     # Checked-in Shadcn primitives (alert, dialog, button, card, etc.)
 ├── docs/                                       # Product documentation & PRD
 │   ├── authentication.md                       # Better Auth architecture & security rules
@@ -193,8 +230,17 @@ search-trace/
 │   ├── 0001_add_opportunities_table.sql
 │   ├── 0002_add_resumes_table.sql
 │   ├── 0003_add_requirements_table.sql
-│   └── 0004_add_evidence_tables.sql
+│   ├── 0004_add_evidence_tables.sql
+│   ├── 0005_add_feedback_items_table.sql
+│   └── 0006_add_evidence_gap_analysis.sql
 ├── lib/
+│   ├── ai/                                     # AI evaluation, prompts, providers & rate limiting
+│   │   ├── analyzer.ts                         # GeminiAiAnalyzer (Vercel AI SDK + Gemini 3.6 Flash)
+│   │   ├── gemini.ts                           # GeminiAiExtractor for requirement extraction
+│   │   ├── index.ts                            # Factory getters & dependency injection for AI services
+│   │   ├── mock.ts                             # InMemoryAiExtractor & InMemoryAiAnalyzer for tests
+│   │   ├── rate-limiter.ts                     # UTC midnight daily rate limiter (5 req/day)
+│   │   └── types.ts                            # Service interfaces and options
 │   ├── auth.ts                                 # Server-only Better Auth instance
 │   ├── auth-client.ts                          # Client-safe Better Auth client (createAuthClient)
 │   ├── auth/                                   # Session resolution (requireSession), schemas, origins
@@ -203,6 +249,7 @@ search-trace/
 │   │   ├── index.ts                            # Drizzle database client factory (server-only)
 │   │   └── schema.ts                           # Canonical Drizzle database schema
 │   ├── extraction/                             # Server-side document text extraction & citation verification
+│   │   ├── citation-verifier.ts                # Verbatim substring citation verifier across all sources
 │   │   ├── magic-bytes.ts                      # Magic byte signature sniffing (PDF/DOCX)
 │   │   └── parser.ts                           # unpdf and mammoth text extraction pipelines
 │   ├── storage/                                # Storage abstraction layer
@@ -212,7 +259,9 @@ search-trace/
 │   │   ├── config.ts                           # Public Supabase config validation
 │   │   └── server.ts                           # Server-side Supabase client (server-only)
 │   ├── validations/                            # Zod validation schemas
+│   │   ├── analysis.ts                         # Evidence-gap analysis input, output & summary schemas
 │   │   ├── evidence.ts                         # Supporting evidence & association schemas
+│   │   ├── feedback.ts                         # Employer feedback item & source schemas
 │   │   ├── opportunity.ts                      # Opportunity input and status schemas
 │   │   ├── requirement.ts                      # Requirement item & extraction schemas
 │   │   └── resume.ts                           # Résumé constraints and mutation schemas
@@ -227,8 +276,10 @@ search-trace/
 │   ├── 004-type-safe-api-migration/            # tRPC v11 migration & boundary inventory
 │   ├── 005-opportunity-management/             # Opportunity CRUD, schemas & UI contracts
 │   ├── 006-private-resume-upload/              # Private résumé upload, storage & review
-│   ├── 007-requirement-extraction/             # Requirement extraction, Vercel AI SDK & Gemini 3.6 Flash
-│   └── 008-supporting-evidence/                # Reusable evidence library & opportunity attachments
+│   ├── 007-requirement-extraction/             # AI requirement extraction, Vercel AI SDK & Gemini 3.6 Flash
+│   ├── 008-supporting-evidence/                # Reusable evidence library & opportunity attachments
+│   ├── 009-employer-feedback/                  # Employer feedback recording, provenance & opt-in
+│   └── 010-evidence-gap-analysis/              # Multi-source evidence-gap analysis & actionable next step
 ├── tests/                                      # Test suites partitioned by spec feature
 │   ├── 001-project-foundation/                 # Shell, accessibility, primitives, and mock isolation
 │   ├── 002-drizzle-supabase-setup/             # DB configs, static boundaries, migration tests
@@ -236,14 +287,18 @@ search-trace/
 │   ├── 005-opportunity-management/             # Opportunity router, forms, list, accessibility
 │   ├── 006-private-resume-upload/              # Résumé upload route, router, parser, storage
 │   ├── 007-requirement-extraction/             # Citation verification, AI extractor, rate limiter, UI
-│   └── 008-supporting-evidence/                # Evidence router, dual-ownership, cascade warning, UI
+│   ├── 008-supporting-evidence/                # Evidence router, dual-ownership, cascade warning, UI
+│   ├── 009-employer-feedback/                  # Feedback router, provenance preservation, AI opt-in, UI
+│   └── 010-evidence-gap-analysis/              # Multi-source citation verifier, AI analyzer, quotas, UI
 ├── trpc/                                       # Application tRPC API layer
 │   ├── client.tsx                              # Client-side tRPC React Query provider & hooks
 │   ├── init.ts                                 # tRPC context, procedures, error formatting
 │   ├── query-client.ts                         # Shared TanStack QueryClient factory
 │   ├── routers/                                # Domain routers
 │   │   ├── _app.ts                             # Root AppRouter definition
+│   │   ├── analysis.ts                         # Evidence-gap analysis & next-action procedures
 │   │   ├── evidence.ts                         # Supporting evidence CRUD & opportunity attachments
+│   │   ├── feedback.ts                         # Employer feedback & provenance preservation
 │   │   ├── opportunity.ts                      # Opportunity CRUD procedures
 │   │   ├── requirement.ts                      # AI requirement extraction & curation procedures
 │   │   ├── resume.ts                           # Résumé review, signed URL, opt-in procedures
@@ -267,6 +322,8 @@ SearchTrace utilizes **tRPC v11** for all structured client-server data interact
      - `resume`: Résumé lifecycle procedures (`getByOpportunityId`, `updateReviewedText`, `setAiOptIn`, `getDownloadUrl`, `retryExtraction`, `delete`).
      - `requirement`: AI requirement extraction, review, manual curation, daily rate limiting.
      - `evidence`: Evidence library CRUD (`list`, `byId`, `create`, `update`, `delete`), opportunity attachments (`listByOpportunityId`, `attach`, `detach`, `createAndAttach`), and cascade warning queries (`getAttachedOpportunities`).
+     - `feedback`: Employer feedback CRUD (`listByOpportunityId`, `byId`, `create`, `update`, `setAiOptIn`, `delete`).
+     - `analysis`: Evidence-gap analysis procedures (`getPreFlight`, `run`, `save`, `getSummary`, `getDailyUsage`).
    - Dedicated Route Handler: `POST /api/opportunities/[opportunityId]/resume` handles binary `multipart/form-data` uploads (up to 10 MB) to avoid serializing large files over tRPC JSON payloads.
 
 2. **Consumption Rules**:
@@ -293,13 +350,13 @@ Drizzle ORM is the **sole owner** of application schema definitions and migratio
    - Defined solely in `lib/db/schema.ts`.
    - Better Auth tables (`user`, `session`, `account`, `verification`) reside in the `public` Postgres schema, with table privileges revoked for `anon` and `authenticated` Supabase roles.
    - Domain tables:
-     - `opportunities`: user-scoped via `userId -> user.id (CASCADE)`. Columns: `company`, `role`, `jobDescription`, `sourceUrl`, `status` (`draft`, `applied`, `interviewing`, `rejected`, `closed`), timestamps.
+     - `opportunities`: user-scoped via `userId -> user.id (CASCADE)`. Columns: `company`, `role`, `jobDescription`, `sourceUrl`, `status` (`draft`, `applied`, `interviewing`, `rejected`, `closed`), `lastAnalyzedAt`, `nextActionText`, `nextActionRequirementId`, `analysisLimitations`, timestamps.
      - `resumes`: 1-to-1 with `opportunities` via `opportunityId -> opportunities.id (CASCADE, UNIQUE)`, user-scoped via `userId -> user.id (CASCADE)`. Columns: `fileName`, `fileSize`, `fileType`, `storagePath`, `extractionState` (`pending`, `ready`, `failed`), `extractedText`, `reviewedText`, `aiOptIn` (default `false`), timestamps.
-     - `requirements`: user-scoped and opportunity-scoped via `opportunityId -> opportunities.id (CASCADE)` and `userId -> user.id (CASCADE)`. Columns: `title`, `category`, `jobDescriptionExcerpt`, `coverageState`, `orderIndex`, timestamps.
-     - `user_daily_usage`: tracks daily analysis limits per user/action.
+     - `requirements`: user-scoped and opportunity-scoped via `opportunityId -> opportunities.id (CASCADE)` and `userId -> user.id (CASCADE)`. Columns: `title`, `category`, `jobDescriptionExcerpt`, `coverageState` (`supported`, `weak`, `missing`, `unknown`), `citationSource`, `citationExcerpt`, `citationSourceTitle`, `missingEvidenceNotes`, `coverageRationale`, `orderIndex`, timestamps.
+     - `user_daily_usage`: tracks daily analysis limits per user/action (5 requests/day).
      - `evidence_items`: user-scoped via `userId -> user.id (CASCADE)`. Columns: `title`, `description`, `type` (`project`, `accomplishment`, `portfolio_link`), `sourceUrl`, timestamps.
      - `opportunity_evidence`: user-scoped join table linking `opportunities` and `evidence_items` via `opportunityId -> opportunities.id (CASCADE)` and `evidenceItemId -> evidence_items.id (CASCADE)` with unique composite `(opportunityId, evidenceItemId)`.
-     - Planned tables: `feedback_items`.
+     - `feedback_items`: user-scoped and opportunity-scoped via `opportunityId -> opportunities.id (CASCADE)` and `userId -> user.id (CASCADE)`. Columns: `feedbackDate`, `text`, `sourceType`, `provenance`, `aiOptIn` (default `false`), timestamps.
 
 2. **Migration Discipline**:
    - **NEVER** run `drizzle-kit push`.
@@ -366,7 +423,58 @@ Automated requirement extraction parses pasted job descriptions to draft 5–12 
 5. **Zero-Credential Offline Resilience**:
    - `InMemoryAiExtractor` in `lib/ai/mock.ts` provides deterministic, fixture-based requirements for tests and local development when `AI_PROVIDER=memory` or API keys are absent, ensuring `bun run check` passes offline.
 
-### 6.6 Boundary Isolation & "Server-Only" Hygiene
+### 6.6 Supporting Evidence & Library Subsystem
+SearchTrace allows users to catalog and attach concrete proof of skills and achievements:
+
+1. **Personal Evidence Library**:
+   - Reusable evidence items (`project`, `accomplishment`, `portfolio_link`) managed centrally at `/dashboard/evidence`.
+   - Each item includes a title, detailed description, type, and optional `sourceUrl` (e.g. GitHub repository, deployed site, or publication).
+2. **Opportunity Attachments**:
+   - Joined via `opportunity_evidence` junction table with dual ownership verification (`userId` on both opportunity and evidence item).
+   - In-context creation allows adding an item to the library and immediately attaching it to the current opportunity in a single step.
+3. **Safe Cascade Warnings**:
+   - Deleting a library item that is attached to one or more opportunities triggers a multi-opportunity cascade warning dialog listing all affected opportunities.
+4. **URL Forwarding**:
+   - `sourceUrl` is passed through to the AI analysis context and rendered as clickable external links on requirement citation badges.
+
+### 6.7 Employer Feedback & Provenance Subsystem
+SearchTrace captures qualitative feedback from real interactions to inform evidence-gap analysis:
+
+1. **Data Model & Provenance**:
+   - Stored in `feedback_items`, strictly scoped to one opportunity and its owner.
+   - Tracks `feedbackDate`, qualitative `text`, `sourceType` (`rejection_email`, `interview_notes`, `recruiter_call`, `other`), and `provenance` (e.g. "Screening call with recruiter Jane").
+2. **Independent AI Consent**:
+   - Feedback items feature their own `aiOptIn` boolean toggle (default `false`).
+   - Items are never forwarded to the AI analysis prompt unless explicitly opted in by the user.
+3. **Safe Deletion**:
+   - Dedicated `FeedbackDeleteDialog` warns before permanent deletion.
+
+### 6.8 Opportunity Evidence-Gap Analysis Subsystem
+Compares approved opportunity requirements against candidate evidence materials:
+
+1. **Vercel AI SDK & Gemini 3.6 Flash**:
+   - Invoked via `generateObject()` with `aiAnalysisOutputSchema` validating structured JSON responses server-side.
+   - Inputs strictly bounded to authorized materials: approved requirements, reviewed résumé text (if `aiOptIn === true`), attached evidence items, and opted-in feedback items.
+2. **Multi-Source Verbatim Citation Verification**:
+   - `verifyMultiSourceCitation` in `lib/extraction/citation-verifier.ts` checks authentic verbatim substring existence across candidate materials.
+   - If a citation excerpt for `supported` or `weak` cannot be verified against the indicated source text, coverage safely falls back to `unknown`.
+3. **Evidence Cross-Referencing & Priority**:
+   - Prompt instructions (Rule 4) direct the AI to systematically evaluate attached proof items (`[EVIDENCE-i]`). Strong proof elevates requirements to `supported` and directly cites the evidence title and excerpt.
+   - Requirement items render external project links (`data-testid="evidence-citation-link"`) when `citationSourceUrl` is present.
+4. **Two-Tier Human Review & Override Workspace**:
+   - Running analysis produces an uncommitted client-side draft. Database records are unmodified until the user clicks "Save Assessment".
+   - Candidates can override any coverage state, review verbatim citations, inspect searched-but-missing notes, and see live updated coverage and evidence utilization counts before committing.
+   - Discarding the draft leaves previous saved analysis results completely untouched.
+5. **Single Bounded Next Action**:
+   - AI generates exactly **one** concrete, feasible next action tied directly to a weak or missing requirement.
+   - Accompanied by a mandatory honest AI disclaimer clarifying that it is an evidence-strengthening suggestion, not a guarantee of hiring outcomes.
+6. **Evidence Utilization Panel**:
+   - `AnalysisCoverageSummary` and `AnalysisDraftReview` render an evidence utilization indicator displaying how many attached evidence items were cited as proof and chips showing cited project titles.
+7. **Daily Quota & Offline Resilience**:
+   - Strict 5 requests/user/day limit tracked via `user_daily_usage` with UTC midnight reset.
+   - `InMemoryAiAnalyzer` in `lib/ai/mock.ts` enables deterministic offline testing and ensures `bun run check` passes with zero network requests or API credentials.
+
+### 6.9 Boundary Isolation & "Server-Only" Hygiene
 The repository enforces strict module separation verified by automated tests:
 
 - **Server-Only Files**: Add `import "server-only";` at the top of all private files:
@@ -378,6 +486,7 @@ The repository enforces strict module separation verified by automated tests:
   - `lib/extraction/parser.ts`
   - `lib/extraction/citation-verifier.ts`
   - `lib/ai/gemini.ts`
+  - `lib/ai/analyzer.ts`
   - `lib/ai/mock.ts`
   - `lib/ai/rate-limiter.ts`
   - `lib/ai/types.ts`
@@ -385,7 +494,13 @@ The repository enforces strict module separation verified by automated tests:
   - `lib/supabase/server.ts`
   - `trpc/init.ts`
   - `trpc/server.tsx`
+  - `trpc/routers/analysis.ts`
+  - `trpc/routers/evidence.ts`
+  - `trpc/routers/feedback.ts`
+  - `trpc/routers/opportunity.ts`
   - `trpc/routers/requirement.ts`
+  - `trpc/routers/resume.ts`
+  - `trpc/routers/system.ts`
   - `app/api/opportunities/[opportunityId]/resume/route.ts`
 - **Client-Only Files**: Add `"use client";` and `import "client-only";` where applicable:
   - `lib/supabase/client.ts`
@@ -422,16 +537,16 @@ The visual design system is built on **Tailwind CSS v4** and customized **Shadcn
 When implementing or extending the structured AI analysis pipeline:
 
 1. **Authorized Inputs**:
-   - Only include: stored job description, user-reviewed résumé text (`reviewedText`, strictly when `aiOptIn === true`), manual evidence items, and opted-in feedback items.
+   - Only include: stored job description, user-reviewed résumé text (`reviewedText`, strictly when `aiOptIn === true`), attached evidence items, and opted-in feedback items (`aiOptIn === true`).
    - All sensitive data toggles must be **OFF by default**.
 2. **Structured Outputs with Zod**:
    - Every AI provider call must return structured JSON validated against a server-side Zod schema.
    - Requirements must be classified into `technical_skill`, `experience`, `education`, `responsibility`, or `other`.
    - Coverage states must be `supported`, `weak`, `missing`, or `unknown`.
-   - Citations must include exact verbatim excerpts from user-provided sources.
+   - Citations must include exact verbatim excerpts from candidate-provided sources.
    - Exactly **one** next action must be proposed, tied directly to a weak or missing requirement.
 3. **No Output Hallucinations**:
-   - AI outputs are saved as **reviewable drafts**. The user can edit, correct, or discard requirements before saving.
+   - AI outputs are saved as **reviewable drafts**. The user can edit, correct, or discard items before saving.
    - The AI must never modify source résumé text, send applications, or fetch external URLs.
 4. **Privacy & Logging Prohibition**:
    - **NEVER** log raw résumés, job descriptions, feedback text, full prompts, or raw model outputs in server logs.
@@ -448,12 +563,17 @@ SearchTrace maintains high testing rigor partitioned by feature specifications:
 - `tests/004-type-safe-api-migration/`: tRPC system router contracts, auth form behaviors, and migration inventory tests.
 - `tests/005-opportunity-management/`: Opportunity CRUD router procedures, ownership authorization, create/edit forms, opportunity listing, accessibility, and static boundaries.
 - `tests/006-private-resume-upload/`: Résumé multipart upload route handler, resume tRPC router procedures, magic byte sniffing, text extraction parsers, Supabase/in-memory storage service, UI components, accessibility, and static boundaries.
+- `tests/007-requirement-extraction/`: AI requirement extraction, Gemini provider, citation verifier, rate limiter, draft review UI, accessibility, and static boundaries.
+- `tests/008-supporting-evidence/`: Evidence router, dual-ownership authorization, cascade deletion warnings, library & opportunity attachment UI, accessibility, and static boundaries.
+- `tests/009-employer-feedback/`: Feedback router, provenance preservation, AI opt-in toggle, UI components, accessibility, and static boundaries.
+- `tests/010-evidence-gap-analysis/`: Multi-source citation verifier, Gemini & InMemory analyzers, evidence cross-referencing, analysis router (quotas, ownership, persistence), UI views (coverage summary, draft review, requirement items with external evidence links, preflight dialog, next action card), accessibility, and static boundaries.
 
 ### Writing New Tests
 - Use `describe` and `it` blocks matching acceptance criteria from `specs/`.
 - Use `renderWithCleanEnvironment()` from `tests/001-project-foundation/test-utils.tsx` for component tests needing an isolated environment.
 - Use in-memory PGlite database instances for DB and tRPC router tests.
 - Use `InMemoryResumeStorage` for isolated storage unit tests without network calls.
+- Use `InMemoryAiExtractor` and `InMemoryAiAnalyzer` for isolated AI unit and router tests.
 - For static boundary tests, read target source files using `fs.readFileSync` and assert absence of forbidden tokens or imports.
 - Mark node-specific test suites with `/** @jest-environment node */` at the top of the file when browser DOM is not required.
 
@@ -492,4 +612,5 @@ Before completing changes or opening a Pull Request:
 - [ ] **Accessibility**: No duplicate `<main>` landmarks; accessible names on all buttons and inputs; axe checks pass with zero violations.
 - [ ] **Error Safety & Non-Enumeration**: tRPC procedures redact sensitive internals and use `unavailableResource()` for private records.
 - [ ] **Private Data Protection**: Résumé uploads validate magic bytes; raw documents are user-scoped; AI opt-in is default OFF.
+- [ ] **Evidence Priority & Verification**: Multi-source citations authentically match candidate materials; attached proof items elevate requirement coverage and provide project links.
 - [ ] **No Uncommitted Next.js Marker Diff**: Ensure the `<!-- BEGIN:nextjs-agent-rules -->` block at the top of `AGENTS.md` remains intact.
