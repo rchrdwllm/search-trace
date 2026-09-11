@@ -6,11 +6,13 @@ import { navGroups } from "@/components/app-shared";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 
 export function AppSidebar() {
   return (
@@ -34,6 +36,9 @@ export function AppSidebar() {
           ))}
         </nav>
       </SidebarContent>
+      <SidebarFooter>
+        <SignOutButton />
+      </SidebarFooter>
     </Sidebar>
   );
 }

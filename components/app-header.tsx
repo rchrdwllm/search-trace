@@ -16,9 +16,6 @@ export function AppHeader({ currentLocation }: { currentLocation: string }) {
         />
         <AppBreadcrumbs currentLocation={currentLocation} />
       </div>
-      <p className="ml-auto max-w-full text-right text-xs text-muted-foreground">
-        Service-independent preview
-      </p>
     </header>
   );
 }

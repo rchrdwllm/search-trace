@@ -1,6 +1,12 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRightIcon } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
 import { credentialsSchema, genericAuthError } from "@/lib/auth/validation";
 export function SignUpForm() {
@@ -35,40 +41,24 @@ export function SignUpForm() {
     }
   }
   return (
-    <form onSubmit={submit} className="grid gap-4" noValidate>
-      <label className="grid gap-1">
-        Email
-        <input
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          className="rounded border p-2"
-        />
-      </label>
-      <label className="grid gap-1">
-        Password
-        <input
-          name="password"
-          type="password"
-          required
-          minLength={8}
-          autoComplete="new-password"
-          className="rounded border p-2"
-        />
-      </label>
+    <form onSubmit={submit} className="flex flex-col gap-6" noValidate aria-busy={pending}>
+      <FieldGroup>
+        <Field data-invalid={Boolean(error)}>
+          <FieldLabel htmlFor="sign-up-email">Email</FieldLabel>
+          <Input id="sign-up-email" name="email" type="email" required autoComplete="email" placeholder="you@company.com" aria-invalid={Boolean(error)} className="h-12" />
+        </Field>
+        <Field data-invalid={Boolean(error)}>
+          <FieldLabel htmlFor="sign-up-password">Password</FieldLabel>
+          <Input id="sign-up-password" name="password" type="password" required minLength={8} autoComplete="new-password" placeholder="Create a password" aria-invalid={Boolean(error)} aria-describedby="password-help" className="h-12" />
+          <FieldDescription id="password-help">Use at least 8 characters. A longer, unique password is best.</FieldDescription>
+        </Field>
+      </FieldGroup>
       {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
+        <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
       )}
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded bg-primary px-4 py-2 text-primary-foreground"
-      >
-        {pending ? "Creating account…" : "Create account"}
-      </button>
+      <Button type="submit" disabled={pending} size="lg" className="h-auto min-h-12 max-h-none w-full px-3 py-3">
+        {pending ? <><Spinner data-icon="inline-start" />Creating account…</> : <>Create account<ArrowRightIcon data-icon="inline-end" /></>}
+      </Button>
     </form>
   );
 }

@@ -21,13 +21,12 @@ export const navGroups: SidebarNavGroup[] = [
     items: [
       {
         title: "Overview",
-        path: "#main-content",
-        isActive: true,
+        path: "/dashboard",
         icon: "overview",
       },
       {
         title: "Evidence Library",
-        path: "/dashboard/evidence",
+        path: "/evidence",
         icon: "workspace",
       },
     ],

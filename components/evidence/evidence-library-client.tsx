@@ -1,17 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
-import { PlusIcon } from "lucide-react";
+import { FileTextIcon, PencilIcon, PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { EvidenceCard } from "./evidence-card";
 import { EvidenceFormDialog } from "./evidence-form-dialog";
 import { EvidenceDeleteDialog } from "./evidence-delete-dialog";
@@ -65,58 +56,56 @@ export function EvidenceLibraryClient({
   ];
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6">
-      <Breadcrumb aria-label="Location navigation">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/dashboard">Dashboard</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Evidence Library</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Evidence Library
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Maintain reusable proof of your work once and attach relevant proof to specific opportunities.
-          </p>
+    <div className="mx-auto w-full max-w-6xl space-y-8">
+      <div className="flex flex-col items-start justify-between gap-6 border-b pb-8 md:flex-row md:items-end">
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground">Your source material</p>
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><PencilIcon className="size-3.5" aria-hidden="true" /> Added by you</span>
+          </div>
+          <div>
+            <h1 className="font-serif text-3xl font-normal tracking-tight sm:text-5xl">Evidence Library</h1>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">
+              Keep credible examples of your work in one place, then choose what is relevant for each opportunity. Evidence here is your material—not an AI assessment.
+            </p>
+          </div>
         </div>
 
-        <Button onClick={() => setIsCreateOpen(true)} className="gap-1.5">
+        <Button onClick={() => setIsCreateOpen(true)} className="h-12 gap-1.5 rounded-md px-4">
           <PlusIcon className="size-4" aria-hidden="true" />
           Add Evidence
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-2 border-b pb-2">
+      {evidenceList.length > 0 && (
+        <aside className="grid grid-cols-[auto_1fr] gap-4 rounded-xl bg-muted p-5 text-sm">
+          <FileTextIcon className="mt-0.5 text-primary" aria-hidden="true" />
+          <div>
+            <p className="font-medium">Reuse the source, tailor the context.</p>
+            <p className="mt-1 max-w-3xl text-muted-foreground">One evidence item can support several opportunities. Attaching it does not change the original or imply that it proves every requirement.</p>
+          </div>
+        </aside>
+      )}
+
+      <div className="mb-2 flex gap-6 overflow-x-auto border-b" role="tablist" aria-label="Evidence categories">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+              "inline-flex min-h-12 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-0 pb-3 text-sm font-medium text-muted-foreground transition-colors",
               activeTab === tab.id
-                ? "bg-primary text-primary-foreground shadow-xs"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                ? "border-primary text-foreground font-bold"
+                : "hover:text-foreground",
             )}
             aria-pressed={activeTab === tab.id}
           >
             <span>{tab.label}</span>
             <span
               className={cn(
-                "rounded-full px-1.5 py-0.2 text-[10px] font-semibold",
-                activeTab === tab.id
-                  ? "bg-primary-foreground/20 text-primary-foreground"
-                  : "bg-muted text-muted-foreground",
+                "inline-grid min-w-6 place-items-center rounded-full border px-1.5 py-1 text-[10px] font-mono font-normal",
+                activeTab === tab.id ? "border-border bg-muted text-foreground" : "border-border bg-muted/50",
               )}
             >
               {tab.count}
@@ -128,11 +117,13 @@ export function EvidenceLibraryClient({
       {evidenceList.length === 0 ? (
         <EvidenceEmptyState onAddEvidence={() => setIsCreateOpen(true)} />
       ) : filteredItems.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+        <div className="mt-4 rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
           No evidence items found for this category.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <>
+          <p className="mt-4 text-sm text-muted-foreground" role="status">Showing {filteredItems.length} {filteredItems.length === 1 ? "item" : "items"} in {tabs.find((tab) => tab.id === activeTab)?.label}</p>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredItems.map((evidence) => (
             <EvidenceCard
               key={evidence.id}
@@ -141,7 +132,8 @@ export function EvidenceLibraryClient({
               onDelete={(item) => setDeletingEvidence(item)}
             />
           ))}
-        </div>
+          </div>
+        </>
       )}
 
       {/* Create Dialog */}
