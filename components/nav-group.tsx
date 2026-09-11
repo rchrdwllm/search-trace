@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/sidebar";
 import type { SidebarNavGroup, SidebarNavItem } from "@/components/app-shared";
 import { CircleDashed, FileSearch, LayoutDashboard } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 const icons = {
   overview: LayoutDashboard,
@@ -20,6 +21,8 @@ function NavIcon({ item }: { item: SidebarNavItem }) {
 }
 
 export function NavGroup({ label, items, description }: SidebarNavGroup) {
+  const pathname = usePathname() ?? "";
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{label}</SidebarGroupLabel>
@@ -28,7 +31,7 @@ export function NavGroup({ label, items, description }: SidebarNavGroup) {
           {description}
         </p>
       ) : null}
-      <SidebarMenu>
+      <SidebarMenu className="gap-1">
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>
             {item.disabled ? (
@@ -42,7 +45,12 @@ export function NavGroup({ label, items, description }: SidebarNavGroup) {
                 <span>{item.title}</span>
               </SidebarMenuButton>
             ) : (
-              <SidebarMenuButton asChild isActive={item.isActive}>
+              <SidebarMenuButton
+                asChild
+                isActive={
+                  item.path ? pathname === item.path : item.isActive
+                }
+              >
                 <a href={item.path ?? "#main-content"}>
                   <NavIcon item={item} />
                   <span>{item.title}</span>

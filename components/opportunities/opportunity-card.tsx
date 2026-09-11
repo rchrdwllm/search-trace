@@ -6,7 +6,9 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
+  CardFooter,
 } from "@/components/ui/card";
+import { ArrowRightIcon, CheckIcon, FileTextIcon } from "lucide-react";
 import type { OpportunityStatus } from "@/lib/validations/opportunity";
 
 export interface OpportunityCardData {
@@ -35,11 +37,16 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
   );
 
   return (
-    <Card className="transition-colors hover:border-primary/50 focus-within:ring-2 focus-within:ring-ring">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1 min-w-0">
-            <CardTitle className="truncate text-lg font-semibold">
+    <Card className="h-full transition-colors hover:ring-foreground/25 focus-within:ring-2 focus-within:ring-ring">
+      <CardHeader>
+        <div className="flex items-center justify-between gap-3">
+          <CardDescription className="truncate font-medium">
+            {opportunity.company}
+          </CardDescription>
+          <OpportunityStatusBadge status={opportunity.status} />
+        </div>
+        <div className="mt-4 min-w-0">
+            <CardTitle className="truncate text-lg font-semibold tracking-tight">
               <h3 className="inline">
                 <Link
                   href={`/dashboard/opportunities/${opportunity.id}`}
@@ -49,21 +56,30 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
                 </Link>
               </h3>
             </CardTitle>
-            <CardDescription className="truncate font-medium text-foreground/80">
-              {opportunity.company}
-            </CardDescription>
-          </div>
-          <OpportunityStatusBadge status={opportunity.status} />
+            <p className="mt-2 text-xs text-muted-foreground">Updated {formattedDate}</p>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 text-xs text-muted-foreground flex items-center justify-between">
-        <span>Updated {formattedDate}</span>
-        <span>
+      <CardContent className="mt-auto" />
+      <CardFooter className="justify-between gap-3 bg-transparent text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-2">
+          {opportunity.lastAnalysisState === "completed" ? (
+            <CheckIcon aria-hidden="true" />
+          ) : (
+            <FileTextIcon aria-hidden="true" />
+          )}
           {opportunity.lastAnalysisState === "completed"
             ? "Analysis ready"
             : "No analysis yet"}
         </span>
-      </CardContent>
+        <Link
+          href={`/dashboard/opportunities/${opportunity.id}`}
+          aria-label={`Open ${opportunity.role} at ${opportunity.company}`}
+          className="inline-flex min-h-8 items-center gap-1 font-semibold text-foreground outline-none hover:text-primary hover:underline focus:text-primary focus:underline"
+        >
+          Open opportunity
+          <ArrowRightIcon aria-hidden="true" />
+        </Link>
+      </CardFooter>
     </Card>
   );
 }

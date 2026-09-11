@@ -1,6 +1,12 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRightIcon } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
 import {
   credentialsSchema,
@@ -39,40 +45,24 @@ export function SignInForm({ next = "" }: { next?: string }) {
   }
   
   return (
-    <form onSubmit={submit} className="grid gap-4" noValidate>
+    <form onSubmit={submit} className="flex flex-col gap-6" noValidate aria-busy={pending}>
       <input type="hidden" name="next" value={next} />
-      <label className="grid gap-1">
-        Email
-        <input
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          className="rounded border p-2"
-        />
-      </label>
-      <label className="grid gap-1">
-        Password
-        <input
-          name="password"
-          type="password"
-          required
-          autoComplete="current-password"
-          className="rounded border p-2"
-        />
-      </label>
+      <FieldGroup>
+        <Field data-invalid={Boolean(error)}>
+          <FieldLabel htmlFor="sign-in-email">Email</FieldLabel>
+          <Input id="sign-in-email" name="email" type="email" required autoComplete="email" placeholder="you@company.com" aria-invalid={Boolean(error)} className="h-12" />
+        </Field>
+        <Field data-invalid={Boolean(error)}>
+          <FieldLabel htmlFor="sign-in-password">Password</FieldLabel>
+          <Input id="sign-in-password" name="password" type="password" required autoComplete="current-password" placeholder="Enter your password" aria-invalid={Boolean(error)} className="h-12" />
+        </Field>
+      </FieldGroup>
       {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
+        <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
       )}
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded bg-primary px-4 py-2 text-primary-foreground"
-      >
-        {pending ? "Signing in…" : "Sign in"}
-      </button>
+      <Button type="submit" disabled={pending} size="lg" className="w-full">
+        {pending ? <><Spinner data-icon="inline-start" />Signing in…</> : <>Sign in<ArrowRightIcon data-icon="inline-end" /></>}
+      </Button>
     </form>
   );
 }

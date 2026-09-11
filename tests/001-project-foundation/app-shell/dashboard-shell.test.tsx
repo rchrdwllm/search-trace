@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import DashboardLayout from "@/app/dashboard/layout";
+import DashboardLayout from "@/app/(app)/layout";
 
 describe("private workspace shell continuity", () => {
   it("keeps the shared shell and its single primary landmark around dashboard content", () => {
