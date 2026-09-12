@@ -68,11 +68,11 @@ export function OpportunityEvidenceSection({
               </span>
             </div>
             <CardDescription>
-              Select projects, accomplishments, and portfolio links from your library to evaluate against this role&apos;s requirements.
+              Attached from your Evidence Library. Detaching removes an item from this opportunity only — your library copy stays.
             </CardDescription>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -110,7 +110,7 @@ export function OpportunityEvidenceSection({
             <p className="text-xs text-muted-foreground max-w-sm mx-auto mb-4">
               Attach existing projects from your library or create a new accomplishment to back your qualifications.
             </p>
-            <div className="flex justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -131,7 +131,7 @@ export function OpportunityEvidenceSection({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-4">
             {selectedItems.map((item) => (
               <EvidenceCard
                 key={item.id}

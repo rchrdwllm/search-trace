@@ -194,19 +194,19 @@ export function RequirementSection({
   const isQuotaExhausted = remainingQuota <= 0;
 
   return (
-    <section className="space-y-4 pt-4 border-t" aria-labelledby="requirements-heading">
+    <section className="flex flex-col gap-4" aria-labelledby="requirements-heading">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h3 id="requirements-heading" className="text-base font-semibold text-foreground">
             Role Requirements
           </h3>
           <p className="text-xs text-muted-foreground">
-            Target qualifications and responsibilities extracted from the job description with verifiable citations.
+            Extracted from the pasted description. AI drafts stay separate until you confirm them — only confirmed items are used in reviews.
           </p>
         </div>
 
         {displayItems.length > 0 && !isDraftMode && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="outline"
@@ -269,7 +269,7 @@ export function RequirementSection({
       )}
 
       {isListLoading ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="flex flex-col gap-3">
           <Skeleton className="h-28 rounded-xl" />
           <Skeleton className="h-28 rounded-xl" />
         </div>
@@ -281,7 +281,7 @@ export function RequirementSection({
           quotaExhausted={isQuotaExhausted}
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="flex flex-col gap-3">
           {displayItems.map((item, idx) => (
             <RequirementCard
               key={item.id || item.tempId || `req-${idx}`}

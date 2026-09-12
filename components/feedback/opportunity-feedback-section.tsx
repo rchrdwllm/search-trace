@@ -21,10 +21,12 @@ import type { FeedbackItem } from "@/lib/db/schema";
 
 interface OpportunityFeedbackSectionProps {
   opportunityId: string;
+  sectionLabel?: string;
 }
 
 export function OpportunityFeedbackSection({
   opportunityId,
+  sectionLabel,
 }: OpportunityFeedbackSectionProps) {
   const trpc = useTRPC();
 
@@ -58,7 +60,8 @@ export function OpportunityFeedbackSection({
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2.5">
+            {sectionLabel && <CardDescription className="font-mono text-xs uppercase tracking-wide">{sectionLabel}</CardDescription>}
+            <div className="flex flex-wrap items-center gap-2.5">
               <CardTitle id="employer-feedback-heading" className="text-xl font-bold tracking-tight">
                 Employer Feedback
               </CardTitle>
@@ -72,7 +75,7 @@ export function OpportunityFeedbackSection({
               )}
             </div>
             <CardDescription>
-              Record quoted or summarized communications from recruiters or interviewers as unverified reported observations.
+              What you heard, in your words. Treated as a reported observation — not verified proof of a hiring decision or cause.
             </CardDescription>
           </div>
 

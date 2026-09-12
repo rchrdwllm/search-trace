@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FeedbackSourceBadge } from "./feedback-source-badge";
 import { FeedbackProvenanceBadge } from "./feedback-provenance-badge";
 import type { FeedbackItem } from "@/lib/db/schema";
@@ -109,13 +110,11 @@ export function FeedbackCard({ item, onEdit, onDelete }: FeedbackCardProps) {
         {/* AI Opt-In Toggle Control */}
         <div className="flex items-start gap-2.5 rounded-lg border bg-muted/20 p-2.5">
           <div className="flex h-5 items-center pt-0.5">
-            <input
-              type="checkbox"
+            <Checkbox
               id={`ai-opt-in-${item.id}`}
               checked={item.aiOptIn}
               disabled={isUpdatingOptIn}
-              onChange={(e) => handleToggleOptIn(e.target.checked)}
-              className="size-4 rounded border-input text-primary focus:ring-2 focus:ring-ring cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+              onCheckedChange={(checked) => handleToggleOptIn(checked === true)}
             />
           </div>
           <div className="space-y-0.5">

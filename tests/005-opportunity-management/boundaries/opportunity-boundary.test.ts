@@ -19,7 +19,10 @@ describe("opportunity module boundaries", () => {
       "components/opportunities/opportunity-status-badge.tsx",
       "components/opportunities/opportunity-delete-dialog.tsx",
       "components/opportunities/opportunity-edit-client.tsx",
-      "app/dashboard/opportunities/new/page.tsx",
+      "components/opportunities/opportunity-page-navigation.tsx",
+      "components/opportunities/opportunity-next-step.tsx",
+      "components/opportunities/opportunity-status-control.tsx",
+      "app/(app)/dashboard/opportunities/new/page.tsx",
       "lib/validations/opportunity.ts",
     ];
 

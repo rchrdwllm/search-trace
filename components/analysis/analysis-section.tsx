@@ -26,11 +26,13 @@ import type {
 interface AnalysisSectionProps {
   opportunityId: string;
   className?: string;
+  showNextAction?: boolean;
 }
 
 export function AnalysisSection({
   opportunityId,
   className,
+  showNextAction = true,
 }: AnalysisSectionProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -245,7 +247,7 @@ export function AnalysisSection({
             <AnalysisCoverageSummary counts={summary.summaryCounts} evidenceStats={evidenceStats} />
 
             {/* Next Action Card */}
-            {summary.nextAction && (
+            {showNextAction && summary.nextAction && (
               <AnalysisNextActionCard
                 text={summary.nextAction.text}
                 targetRequirementTitle={summary.nextAction.targetRequirementTitle}
