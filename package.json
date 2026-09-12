@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.64",
+    "@bprogress/next": "3.2.12",
     "@google/genai": "^2.21.0",
     "@supabase/ssr": "^0.12.6",
     "@supabase/supabase-js": "^2.116.0",

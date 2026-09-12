@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/sidebar";
 import type { SidebarNavGroup, SidebarNavItem } from "@/components/app-shared";
 import { CircleDashed, FileSearch, LayoutDashboard } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const icons = {
@@ -51,10 +52,10 @@ export function NavGroup({ label, items, description }: SidebarNavGroup) {
                   item.path ? pathname === item.path : item.isActive
                 }
               >
-                <a href={item.path ?? "#main-content"}>
+                <Link href={item.path ?? "#main-content"}>
                   <NavIcon item={item} />
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             )}
           </SidebarMenuItem>
