@@ -10,10 +10,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   feedbackSourceTypeEnum,
   feedbackProvenanceEnum,
@@ -25,7 +37,7 @@ import { feedbackProvenanceLabels } from "./feedback-provenance-badge";
 import type { FeedbackItem } from "@/lib/db/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
-import { ShieldAlertIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 
 interface FeedbackFormDialogProps {
   open: boolean;
@@ -50,6 +62,30 @@ function getTodayIsoDate(): string {
   return `${year}-${month}-${day}`;
 }
 
+function parseIsoDate(value: string): Date | undefined {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return undefined;
+  return new Date(year, month - 1, day);
+}
+
+function formatIsoDate(date: Date | undefined): string {
+  if (!date) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateLabel(value: string): string {
+  const date = parseIsoDate(value);
+  if (!date) return "Pick a date";
+  return new Intl.DateTimeFormat(undefined, {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
 function FeedbackForm({
   opportunityId,
   feedback,
@@ -63,6 +99,7 @@ function FeedbackForm({
   const [feedbackDate, setFeedbackDate] = useState(
     feedback?.feedbackDate ?? getTodayIsoDate(),
   );
+  const [isDateOpen, setIsDateOpen] = useState(false);
   const [text, setText] = useState(feedback?.text ?? "");
   const [sourceType, setSourceType] = useState<FeedbackSourceType>(
     feedback?.sourceType ?? "interview_feedback",
@@ -154,15 +191,11 @@ function FeedbackForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Privacy Notice Banner */}
-      <Alert className="border-amber-200 bg-amber-50/70 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300">
-        <ShieldAlertIcon className="size-4 text-amber-700 dark:text-amber-400" />
-        <AlertDescription className="text-xs leading-relaxed">
-          <strong>Privacy Notice:</strong> Please do not paste recruiter email
-          addresses, phone numbers, signatures, or private email headers. Keep
-          feedback focused on role and evaluation content.
-        </AlertDescription>
-      </Alert>
+      <p className="sr-only">
+        <strong>Privacy Notice:</strong> Please do not paste recruiter email
+        addresses, phone numbers, signatures, or private email headers. Keep
+        feedback focused on role and evaluation content.
+      </p>
 
       {errorMessage && (
         <div
@@ -180,14 +213,38 @@ function FeedbackForm({
           <Label htmlFor="feedback-date" className="text-xs font-semibold">
             Date Received <span className="text-destructive">*</span>
           </Label>
-          <Input
-            id="feedback-date"
-            type="date"
+          <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                id="feedback-date"
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                className="w-full justify-between font-normal"
+                aria-label="Date Received"
+              >
+                {formatDateLabel(feedbackDate)}
+                <CalendarIcon data-icon="inline-end" aria-hidden="true" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={parseIsoDate(feedbackDate)}
+                onSelect={(date) => {
+                  setFeedbackDate(formatIsoDate(date));
+                  setIsDateOpen(false);
+                }}
+                defaultMonth={parseIsoDate(feedbackDate)}
+              />
+            </PopoverContent>
+          </Popover>
+          <input
+            type="hidden"
+            name="feedbackDate"
             value={feedbackDate}
-            onChange={(e) => setFeedbackDate(e.target.value)}
-            disabled={isSubmitting}
-            required
-            className="w-full"
+            readOnly
+            aria-hidden="true"
           />
         </div>
 
@@ -195,19 +252,24 @@ function FeedbackForm({
           <Label htmlFor="feedback-source-type" className="text-xs font-semibold">
             Source Channel <span className="text-destructive">*</span>
           </Label>
-          <select
-            id="feedback-source-type"
+          <Select
             value={sourceType}
-            onChange={(e) => setSourceType(e.target.value as FeedbackSourceType)}
+            onValueChange={(value) => setSourceType(value as FeedbackSourceType)}
             disabled={isSubmitting}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {feedbackSourceTypeEnum.options.map((option) => (
-              <option key={option} value={option}>
-                {feedbackSourceLabels[option]}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="feedback-source-type" className="w-full">
+              <SelectValue placeholder="Select source channel" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {feedbackSourceTypeEnum.options.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {feedbackSourceLabels[option]}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -216,7 +278,7 @@ function FeedbackForm({
         <Label className="text-xs font-semibold">
           Provenance Classification <span className="text-destructive">*</span>
         </Label>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {feedbackProvenanceEnum.options.map((option) => {
             const isChecked = provenance === option;
             const isQuote = option === "exact_quote";
@@ -287,7 +349,7 @@ function FeedbackForm({
         />
       </div>
 
-      <DialogFooter className="gap-2 sm:gap-0 pt-2">
+      <DialogFooter className="gap-3 pt-2">
         <Button
           type="button"
           variant="outline"

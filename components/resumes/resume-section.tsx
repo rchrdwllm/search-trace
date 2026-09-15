@@ -94,15 +94,6 @@ export function ResumeSection({ opportunityId }: ResumeSectionProps) {
 
   return (
     <section className="space-y-4" aria-label="Résumé evaluation materials">
-      <div className="space-y-1">
-        <h3 className="text-base font-semibold text-foreground">
-          Submitted Résumé
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          The résumé you submitted for this role. One current document is analyzed at a time.
-        </p>
-      </div>
-
       {!resume ? (
         <ResumeUploadDropzone
           opportunityId={opportunityId}

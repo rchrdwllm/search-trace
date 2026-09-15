@@ -17,14 +17,6 @@ interface RequirementCardProps {
   isDraft?: boolean;
 }
 
-const categoryStyles: Record<RequirementCategory, string> = {
-  technical_skill: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
-  experience: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20",
-  education: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20",
-  responsibility: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20",
-  other: "bg-muted text-muted-foreground border-border",
-};
-
 export function RequirementCard({
   title,
   category,
@@ -34,16 +26,13 @@ export function RequirementCard({
   isDraft = false,
 }: RequirementCardProps) {
   const categoryLabel = requirementCategoryLabels[category] ?? category;
-  const badgeClass = categoryStyles[category] ?? categoryStyles.other;
 
   return (
-    <div className="group flex flex-col justify-between gap-3 rounded-xl border bg-card p-4 shadow-2xs transition-colors hover:border-border/80">
+    <div className="group flex flex-col justify-between gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-border/80">
       <div className="space-y-2">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <span
-              className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${badgeClass}`}
-            >
+            <span className="font-mono text-xs tracking-wide text-muted-foreground">
               {categoryLabel}
             </span>
             {isDraft && (
@@ -86,7 +75,7 @@ export function RequirementCard({
         </h4>
 
         {jobDescriptionExcerpt && (
-          <blockquote className="mt-2 flex items-start gap-2 rounded-lg bg-muted/40 p-2.5 text-xs text-muted-foreground border-l-2 border-primary/40">
+          <blockquote className="mt-2 flex items-start gap-2 rounded-lg bg-muted/40 p-2.5 text-xs text-muted-foreground">
             <QuoteIcon className="size-3.5 shrink-0 mt-0.5 text-muted-foreground/60 rotate-180" />
             <span className="italic leading-relaxed whitespace-pre-wrap line-clamp-3 hover:line-clamp-none transition-all">
               &ldquo;{jobDescriptionExcerpt}&rdquo;

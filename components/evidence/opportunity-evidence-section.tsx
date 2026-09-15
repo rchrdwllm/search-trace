@@ -57,10 +57,13 @@ export function OpportunityEvidenceSection({
   return (
     <Card className="w-full">
       <CardHeader>
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1">
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className="flex flex-col gap-1">
+            <p className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              03 · Source material
+            </p>
             <div className="flex items-center gap-2.5">
-              <CardTitle className="text-xl font-bold tracking-tight">
+              <CardTitle className="font-display text-xl font-normal tracking-tight">
                 Supporting Evidence
               </CardTitle>
               <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
@@ -68,11 +71,11 @@ export function OpportunityEvidenceSection({
               </span>
             </div>
             <CardDescription>
-              Select projects, accomplishments, and portfolio links from your library to evaluate against this role&apos;s requirements.
+              Attached from your Evidence Library. Detaching removes an item from this opportunity only; your library copy stays.
             </CardDescription>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:pt-5">
             <Button
               variant="outline"
               size="sm"

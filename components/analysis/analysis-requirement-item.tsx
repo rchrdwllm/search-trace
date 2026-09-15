@@ -70,7 +70,7 @@ export function AnalysisRequirementItem({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            <span className="font-mono text-xs tracking-wide text-muted-foreground">
               {requirementCategoryLabels[category] ?? category}
             </span>
             <AnalysisCoverageBadge state={coverageState} />

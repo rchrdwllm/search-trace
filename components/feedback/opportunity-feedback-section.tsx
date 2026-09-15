@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { InfoIcon, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FeedbackCard } from "./feedback-card";
 import { FeedbackFormDialog } from "./feedback-form-dialog";
 import { FeedbackDeleteDialog } from "./feedback-delete-dialog";
@@ -56,43 +55,44 @@ export function OpportunityFeedbackSection({
   return (
     <Card className="w-full" aria-labelledby="employer-feedback-heading">
       <CardHeader>
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1">
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className="flex flex-col gap-1">
+            <p className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              04 · Separate perspective
+            </p>
             <div className="flex items-center gap-2.5">
-              <CardTitle id="employer-feedback-heading" className="text-xl font-bold tracking-tight">
+              <CardTitle id="employer-feedback-heading" className="font-display text-xl font-normal tracking-tight">
                 Employer Feedback
               </CardTitle>
-              <span className="inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-semibold text-sky-800 dark:bg-sky-950/60 dark:text-sky-300">
+              <span className="sr-only">
                 Reported Signal
               </span>
               {items.length > 0 && (
-                <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
                   {items.length} {items.length === 1 ? "entry" : "entries"}
                 </span>
               )}
             </div>
             <CardDescription>
-              Record quoted or summarized communications from recruiters or interviewers as unverified reported observations.
+              What you heard, in your words. Treated as a reported observation, not verified proof of a hiring decision or cause.
             </CardDescription>
           </div>
 
-          <Button size="sm" onClick={handleOpenCreate} className="gap-1.5">
-            <PlusIcon className="size-4" aria-hidden="true" />
-            Add Feedback
-          </Button>
+          <div className="flex items-center gap-2 sm:pt-5">
+            <Button size="sm" onClick={handleOpenCreate} className="gap-1.5">
+              <PlusIcon className="size-4" aria-hidden="true" />
+              Add Feedback
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Non-causality Disclaimer Notice */}
-        <Alert className="border-sky-200 bg-sky-50/50 text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/20 dark:text-sky-300">
-          <InfoIcon className="size-4 text-sky-600 dark:text-sky-400" />
-          <AlertDescription className="text-xs leading-relaxed">
-            <strong>Reported Signal Notice:</strong> Employer feedback is preserved strictly as
-            reported observations. SearchTrace never presents feedback as verified proof of a
-            rejection cause or hiring probability.
-          </AlertDescription>
-        </Alert>
+        <p className="sr-only">
+          <strong>Reported Signal Notice:</strong> Employer feedback is preserved strictly as
+          reported observations. SearchTrace never presents feedback as verified proof of a
+          rejection cause or hiring probability.
+        </p>
 
         {isLoading ? (
           <div className="py-8 text-center text-sm text-muted-foreground animate-pulse">

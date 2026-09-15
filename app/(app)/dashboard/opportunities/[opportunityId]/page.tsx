@@ -8,14 +8,16 @@ import { RequirementSection } from "@/components/requirements/requirement-sectio
 import { OpportunityEvidenceSection } from "@/components/evidence/opportunity-evidence-section";
 import { OpportunityFeedbackSection } from "@/components/feedback/opportunity-feedback-section";
 import { AnalysisSection } from "@/components/analysis/analysis-section";
+import { OpportunitySectionNav } from "@/components/opportunities/opportunity-section-nav";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,7 +26,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { ExternalLinkIcon, PencilIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  CheckCircle2Icon,
+  ExternalLinkIcon,
+  PencilIcon,
+} from "lucide-react";
 
 interface OpportunityDetailPageProps {
   params: Promise<{ opportunityId: string }>;
@@ -43,17 +50,16 @@ export default async function OpportunityDetailPage({
     notFound();
   }
 
-  const createdFormatted = new Date(opportunity.createdAt).toLocaleDateString(
-    undefined,
-    { month: "short", day: "numeric", year: "numeric" },
-  );
-  const updatedFormatted = new Date(opportunity.updatedAt).toLocaleDateString(
-    undefined,
-    { month: "short", day: "numeric", year: "numeric" },
-  );
+  const dateFormatter = new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  const createdFormatted = dateFormatter.format(new Date(opportunity.createdAt));
+  const updatedFormatted = dateFormatter.format(new Date(opportunity.updatedAt));
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 pb-10">
       <Breadcrumb aria-label="Location navigation">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -70,109 +76,165 @@ export default async function OpportunityDetailPage({
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b pb-6">
-        <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {opportunity.role}
-            </h1>
-            <OpportunityStatusBadge status={opportunity.status} />
-          </div>
-          <p className="text-lg font-medium text-muted-foreground">
-            {opportunity.company}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button variant="outline" asChild size="sm">
-            <Link href={`/dashboard/opportunities/${opportunity.id}/edit`}>
-              <PencilIcon className="mr-1.5 size-4" aria-hidden="true" />
-              Edit
-            </Link>
-          </Button>
-          <OpportunityDeleteDialog
-            opportunityId={opportunity.id}
-            opportunityTitle={`${opportunity.role} at ${opportunity.company}`}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <Card className="md:col-span-1">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold">
-              Application Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
-            {opportunity.sourceUrl && (
-              <div>
-                <span className="text-xs text-muted-foreground block mb-1">
-                  Source Posting
-                </span>
-                <a
-                  href={opportunity.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-primary hover:underline text-sm font-medium break-all"
-                >
-                  View Original Posting
-                  <ExternalLinkIcon
-                    className="size-3.5 shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span className="sr-only">(opens in new tab)</span>
-                </a>
+      <Card>
+        <CardHeader className="gap-5 md:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-5">
+            <div className="flex min-w-0 flex-col gap-2">
+              <p className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Captured {createdFormatted}
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="font-display text-3xl font-normal tracking-tight sm:text-4xl">
+                  {opportunity.role}
+                </h1>
+                <OpportunityStatusBadge status={opportunity.status} />
               </div>
-            )}
-
-            <div>
-              <span className="text-xs text-muted-foreground block mb-1">
-                Analysis State
-              </span>
-              <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                {opportunity.lastAnalysisState === "completed"
-                  ? "Analysis ready"
-                  : "Analysis not yet run"}
-              </span>
+              <p className="text-lg text-muted-foreground">{opportunity.company}</p>
             </div>
 
-            <div className="pt-2 border-t text-xs text-muted-foreground space-y-1">
-              <div>Captured: {createdFormatted}</div>
-              <div>Last updated: {updatedFormatted}</div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" asChild>
+                <Link href={`/dashboard/opportunities/${opportunity.id}/edit`}>
+                  <PencilIcon data-icon="inline-start" aria-hidden="true" />
+                  Edit
+                </Link>
+              </Button>
+              <OpportunityDeleteDialog
+                opportunityId={opportunity.id}
+                opportunityTitle={`${opportunity.role} at ${opportunity.company}`}
+              />
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">
-              Job Description
+          <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            Keep every source and assessment for this application together. SearchTrace uses only the evidence you review and explicitly allow.
+          </p>
+        </CardHeader>
+      </Card>
+
+      {opportunity.nextActionText && (
+        <Card>
+          <CardHeader className="md:px-6">
+            <p className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Your one next action
+            </p>
+            <CardTitle className="flex items-start gap-2 font-display text-base font-normal">
+              <ArrowRightIcon className="mt-0.5 shrink-0" aria-hidden="true" />
+              {opportunity.nextActionText}
             </CardTitle>
             <CardDescription>
-              Verbatim role requirements pasted for evidence-gap analysis.
+              Bounded from your latest saved evidence-gap review.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="rounded-lg border bg-muted/20 p-4 text-sm font-sans whitespace-pre-wrap leading-relaxed text-foreground break-words max-h-[600px] overflow-y-auto">
-              {opportunity.jobDescription}
-            </div>
-          </CardContent>
         </Card>
+      )}
+
+      <div className="grid items-start gap-8 lg:grid-cols-[13rem_minmax(0,1fr)]">
+        <OpportunitySectionNav />
+
+        <div className="flex min-w-0 flex-col gap-6">
+          <Card id="overview" className="scroll-mt-24">
+            <CardHeader>
+              <p className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">01 · Opportunity record</p>
+              <CardTitle className="font-display text-xl font-normal">Overview</CardTitle>
+              <CardDescription>What you captured for this role. SearchTrace never contacts the employer.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+              <dl className="grid gap-x-5 gap-y-3 text-sm sm:grid-cols-[9rem_1fr]">
+                <dt className="text-muted-foreground">Status</dt>
+                <dd><OpportunityStatusBadge status={opportunity.status} /></dd>
+                <dt className="text-muted-foreground">Source posting</dt>
+                <dd>
+                  {opportunity.sourceUrl ? (
+                    <a href={opportunity.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline">
+                      View original posting
+                      <ExternalLinkIcon className="size-3.5 shrink-0" aria-hidden="true" />
+                      <span className="sr-only">(opens in new tab)</span>
+                    </a>
+                  ) : <span className="text-muted-foreground">Not provided</span>}
+                </dd>
+                <dt className="text-muted-foreground">Gap review</dt>
+                <dd>{opportunity.lastAnalysisState === "completed" ? "Review saved" : "Not yet run"}</dd>
+                <dt className="text-muted-foreground">Captured</dt>
+                <dd>{createdFormatted}</dd>
+                <dt className="text-muted-foreground">Last updated</dt>
+                <dd>{updatedFormatted}</dd>
+              </dl>
+
+              <div className="flex flex-col gap-2">
+                <h3 className="font-sans text-base font-normal">Job description <span className="font-sans text-sm font-normal text-muted-foreground">· pasted by you</span></h3>
+                <ScrollArea tabIndex={0} aria-label="Pasted job description, scrollable" className="h-80 whitespace-pre-wrap break-words rounded-lg border bg-muted/30 p-4 text-sm leading-relaxed">
+                  {opportunity.jobDescription}
+                </ScrollArea>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card id="resume" className="scroll-mt-24">
+            <CardHeader>
+              <p className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">02 · Source material</p>
+              <CardTitle className="font-display text-xl font-normal">Résumé</CardTitle>
+              <CardDescription>Review the extracted text that evidence-gap reviews are allowed to cite.</CardDescription>
+            </CardHeader>
+            <CardContent><ResumeSection opportunityId={opportunity.id} /></CardContent>
+          </Card>
+
+          <section id="evidence" className="scroll-mt-24" aria-label="Supporting evidence">
+            <OpportunityEvidenceSection opportunityId={opportunity.id} />
+          </section>
+
+          <section id="feedback" className="scroll-mt-24" aria-label="Employer feedback">
+            <OpportunityFeedbackSection opportunityId={opportunity.id} />
+          </section>
+
+          <Card id="gap-review" className="scroll-mt-24">
+            <CardHeader>
+              <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                <div className="flex flex-col gap-1">
+                  <p className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">05 · Reviewable assessment</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CardTitle className="font-display text-xl font-normal">Evidence-gap review</CardTitle>
+                    {opportunity.lastAnalysisState === "completed" && (
+                      <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
+                        <CheckCircle2Icon className="size-3" aria-hidden="true" />
+                        Assessed
+                      </span>
+                    )}
+                  </div>
+                  <CardDescription>Compare confirmed requirements with the sources you reviewed and opted in.</CardDescription>
+                </div>
+                <div id={`analysis-actions-${opportunity.id}`} className="flex items-center gap-2" />
+              </div>
+            </CardHeader>
+            <CardContent><AnalysisSection opportunityId={opportunity.id} actionsTargetId={`analysis-actions-${opportunity.id}`} /></CardContent>
+          </Card>
+
+          <Card id="requirements" className="scroll-mt-24">
+            <CardHeader>
+              <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                <div className="flex flex-col gap-1">
+                  <p className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">06 · Confirmed by you</p>
+                  <CardTitle className="font-display text-xl font-normal">Requirements</CardTitle>
+                  <CardDescription>Only confirmed items are used in evidence-gap reviews.</CardDescription>
+                </div>
+                <div id={`requirements-actions-${opportunity.id}`} className="flex items-center gap-2 sm:pt-5" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <RequirementSection
+                opportunityId={opportunity.id}
+                jobDescription={opportunity.jobDescription}
+                actionsTargetId={`requirements-actions-${opportunity.id}`}
+              />
+            </CardContent>
+          </Card>
+
+          <footer className="flex flex-wrap justify-between gap-3 pt-4 text-xs text-muted-foreground">
+            <span>Evidence informs your application. It does not predict an outcome.</span>
+            <span className="font-mono uppercase tracking-wider">SearchTrace</span>
+          </footer>
+        </div>
       </div>
-
-      <ResumeSection opportunityId={opportunity.id} />
-
-      <OpportunityEvidenceSection opportunityId={opportunity.id} />
-
-      <OpportunityFeedbackSection opportunityId={opportunity.id} />
-
-      <AnalysisSection opportunityId={opportunity.id} />
-
-      <RequirementSection
-        opportunityId={opportunity.id}
-        jobDescription={opportunity.jobDescription}
-      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTRPC } from "@/trpc/client";
@@ -11,7 +12,6 @@ import {
   AlertCircle,
   AlertTriangle,
   Clock,
-  CheckCircle2,
 } from "lucide-react";
 import { AnalysisCoverageSummary } from "./analysis-coverage-summary";
 import { AnalysisNextActionCard } from "./analysis-next-action-card";
@@ -26,11 +26,13 @@ import type {
 interface AnalysisSectionProps {
   opportunityId: string;
   className?: string;
+  actionsTargetId?: string;
 }
 
 export function AnalysisSection({
   opportunityId,
   className,
+  actionsTargetId,
 }: AnalysisSectionProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -156,13 +158,48 @@ export function AnalysisSection({
     citedEvidenceTitles,
   };
 
+  const [actionsTarget, setActionsTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!actionsTargetId) return;
+
+    const target = document.getElementById(actionsTargetId);
+    if (!target) return;
+
+    const timer = window.setTimeout(() => setActionsTarget(target), 0);
+    return () => window.clearTimeout(timer);
+  }, [actionsTargetId]);
+
+  const analysisActions = isAnalyzed && summary ? (
+    <div className="flex flex-col items-end gap-1">
+      {summary.lastAnalyzedAt && (
+        <p className="flex items-center gap-1 whitespace-nowrap text-xs text-muted-foreground">
+          <Clock className="size-3" />
+          Last evaluated on {new Date(summary.lastAnalyzedAt).toLocaleString()}
+        </p>
+      )}
+      <Button
+        type="button"
+        variant="default"
+        size="sm"
+        onClick={() => setIsPreflightOpen(true)}
+        disabled={runMutation.isPending || (dailyUsage && dailyUsage.remaining <= 0)}
+      >
+        <RefreshCw className="mr-1.5 size-3.5" />
+        Re-run Analysis
+      </Button>
+    </div>
+  ) : null;
+
   return (
     <section
-      aria-labelledby="analysis-section-heading"
+      aria-label="Evidence-gap analysis"
       className={className}
       data-testid="analysis-section"
     >
       <div className="space-y-6">
+        {analysisActions && (actionsTarget ? createPortal(analysisActions, actionsTarget) : analysisActions)}
+
         {/* Error Alert */}
         {errorMessage && (
           <Alert variant="destructive">
@@ -206,41 +243,6 @@ export function AnalysisSection({
         ) : isAnalyzed && summary ? (
           /* State 2: Analyzed & Confirmed View */
           <div className="space-y-6" data-testid="analyzed-view">
-            {/* Header / Re-run Bar */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <h2
-                    id="analysis-section-heading"
-                    className="text-xl font-bold tracking-tight text-foreground"
-                  >
-                    Evidence-Gap Analysis
-                  </h2>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800">
-                    <CheckCircle2 className="size-3" />
-                    Assessed
-                  </span>
-                </div>
-                {summary.lastAnalyzedAt && (
-                  <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock className="size-3" />
-                    Last evaluated on {new Date(summary.lastAnalyzedAt).toLocaleString()}
-                  </p>
-                )}
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsPreflightOpen(true)}
-                disabled={runMutation.isPending || (dailyUsage && dailyUsage.remaining <= 0)}
-              >
-                <RefreshCw className="mr-1.5 size-3.5" />
-                Re-run Analysis
-              </Button>
-            </div>
-
             {/* Coverage Summary Cards */}
             <AnalysisCoverageSummary counts={summary.summaryCounts} evidenceStats={evidenceStats} />
 

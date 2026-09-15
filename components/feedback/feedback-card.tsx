@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FeedbackSourceBadge } from "./feedback-source-badge";
 import { FeedbackProvenanceBadge } from "./feedback-provenance-badge";
 import type { FeedbackItem } from "@/lib/db/schema";
@@ -63,28 +64,29 @@ export function FeedbackCard({ item, onEdit, onDelete }: FeedbackCardProps) {
 
   return (
     <Card className="flex flex-col justify-between transition-all hover:border-foreground/20 hover:shadow-sm">
-      <CardHeader className="pb-3 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          {/* Metadata Badges & Date */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground font-medium">
+      <CardHeader className="gap-3 pb-0">
+        <div className="flex w-full items-center gap-2">
+          {/* Metadata & Date */}
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 font-mono text-xs tracking-wide text-muted-foreground">
               <CalendarIcon className="size-3.5" aria-hidden="true" />
               {formatDate(item.feedbackDate)}
             </span>
-            <FeedbackSourceBadge sourceType={item.sourceType} />
-            <FeedbackProvenanceBadge provenance={item.provenance} />
+            <FeedbackSourceBadge sourceType={item.sourceType} className="sr-only" />
+            <FeedbackProvenanceBadge provenance={item.provenance} className="sr-only" />
           </div>
 
           {/* Edit / Delete Action Buttons */}
-          <div className="flex items-center gap-1">
+          <div className="ml-auto flex items-center gap-1">
             <Button
               variant="ghost"
               size="icon-xs"
               onClick={() => onEdit(item)}
+              className="text-muted-foreground hover:text-foreground"
               aria-label={`Edit feedback from ${item.feedbackDate}`}
               title="Edit feedback"
             >
-              <PencilIcon className="size-3.5" aria-hidden="true" />
+              <PencilIcon data-icon="inline-start" aria-hidden="true" />
             </Button>
             <Button
               variant="ghost"
@@ -94,7 +96,7 @@ export function FeedbackCard({ item, onEdit, onDelete }: FeedbackCardProps) {
               aria-label={`Delete feedback from ${item.feedbackDate}`}
               title="Delete feedback"
             >
-              <Trash2Icon className="size-3.5" aria-hidden="true" />
+              <Trash2Icon data-icon="inline-start" aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -109,13 +111,11 @@ export function FeedbackCard({ item, onEdit, onDelete }: FeedbackCardProps) {
         {/* AI Opt-In Toggle Control */}
         <div className="flex items-start gap-2.5 rounded-lg border bg-muted/20 p-2.5">
           <div className="flex h-5 items-center pt-0.5">
-            <input
-              type="checkbox"
+            <Checkbox
               id={`ai-opt-in-${item.id}`}
               checked={item.aiOptIn}
               disabled={isUpdatingOptIn}
-              onChange={(e) => handleToggleOptIn(e.target.checked)}
-              className="size-4 rounded border-input text-primary focus:ring-2 focus:ring-ring cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+              onCheckedChange={(checked) => handleToggleOptIn(checked === true)}
             />
           </div>
           <div className="space-y-0.5">

@@ -14,6 +14,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   evidenceTypeEnum,
   type EvidenceType,
 } from "@/lib/validations/evidence";
@@ -203,19 +211,24 @@ function EvidenceForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="evidence-type">Type</Label>
-        <select
-          id="evidence-type"
+        <Select
           value={type}
-          onChange={(e) => setType(e.target.value as EvidenceType)}
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-2xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          onValueChange={(value) => setType(value as EvidenceType)}
           disabled={isSubmitting}
         >
-          {evidenceTypeEnum.options.map((opt) => (
-            <option key={opt} value={opt} className="bg-popover text-popover-foreground">
-              {evidenceTypeLabels[opt]}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id="evidence-type" className="w-full">
+            <SelectValue placeholder="Select evidence type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {evidenceTypeEnum.options.map((opt) => (
+                <SelectItem key={opt} value={opt}>
+                  {evidenceTypeLabels[opt]}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-1.5">
@@ -255,7 +268,7 @@ function EvidenceForm({
         </p>
       </div>
 
-      <DialogFooter className="gap-2 sm:gap-0 pt-2">
+      <DialogFooter className="gap-3 pt-2">
         <Button
           type="button"
           variant="outline"

@@ -52,8 +52,12 @@ export function OpportunityDeleteDialog({
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         {trigger ?? (
-          <Button variant="destructive" size="sm">
-            <Trash2Icon className="mr-1.5 size-4" aria-hidden="true" />
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <Trash2Icon data-icon="inline-start" aria-hidden="true" />
             Delete
           </Button>
         )}

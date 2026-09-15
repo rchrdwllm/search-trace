@@ -14,6 +14,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   requirementCategoryEnum,
   requirementCategoryLabels,
   type RequirementCategory,
@@ -102,18 +110,23 @@ export function RequirementAddDialog({
               <Label htmlFor="add-req-category" className="text-xs font-medium">
                 Category
               </Label>
-              <select
-                id="add-req-category"
+              <Select
                 value={category}
-                onChange={(e) => setCategory(e.target.value as RequirementCategory)}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                onValueChange={(value) => setCategory(value as RequirementCategory)}
               >
-                {requirementCategoryEnum.options.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {requirementCategoryLabels[cat]}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="add-req-category" className="w-full">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {requirementCategoryEnum.options.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {requirementCategoryLabels[cat]}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-1.5">

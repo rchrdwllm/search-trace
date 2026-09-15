@@ -2,6 +2,7 @@
 
 import { Loader2Icon } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ResumeAiConsentToggleProps {
   enabled: boolean;
@@ -15,15 +16,13 @@ export function ResumeAiConsentToggle({
   isUpdating = false,
 }: ResumeAiConsentToggleProps) {
   return (
-    <div className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm">
+    <div className="flex items-start gap-3 rounded-xl border bg-card p-4">
       <div className="flex h-5 items-center pt-0.5">
-        <input
-          type="checkbox"
+        <Checkbox
           id="resume-ai-consent-checkbox"
           checked={enabled}
           disabled={isUpdating}
-          onChange={(e) => void onToggle(e.target.checked)}
-          className="size-4 rounded border-input text-primary focus:ring-2 focus:ring-ring cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+          onCheckedChange={(checked) => void onToggle(checked === true)}
         />
       </div>
       <div className="space-y-1">

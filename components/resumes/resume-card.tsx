@@ -1,6 +1,6 @@
 "use client";
 
-import { FileTextIcon, DownloadIcon, RefreshCwIcon, Trash2Icon, CheckCircle2Icon, AlertCircleIcon, Loader2Icon } from "lucide-react";
+import { FileTextIcon, DownloadIcon, RefreshCwIcon, Trash2Icon, AlertCircleIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type ExtractionState } from "@/lib/validations/resume";
 
@@ -46,19 +46,18 @@ export function ResumeCard({
       : "";
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border bg-card p-4 shadow-sm">
+    <div className="flex flex-col justify-between gap-4 rounded-xl border bg-card p-4 sm:flex-row sm:items-center">
       <div className="flex items-start gap-3 min-w-0">
         <div className="rounded-lg bg-primary/10 p-2.5 text-primary shrink-0 mt-0.5 sm:mt-0">
           <FileTextIcon className="size-5" />
         </div>
-        <div className="min-w-0 space-y-1">
+        <div className="flex min-w-0 flex-col gap-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="text-sm font-semibold text-foreground truncate max-w-[280px] sm:max-w-md" title={fileName}>
               {fileName}
             </h3>
             {extractionState === "ready" && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2Icon className="size-3" />
+              <span className="sr-only" role="status">
                 Extraction ready
               </span>
             )}
@@ -91,9 +90,9 @@ export function ResumeCard({
           className="h-8 gap-1.5 text-xs"
         >
           {isDownloading ? (
-            <Loader2Icon className="size-3.5 animate-spin" />
+            <Loader2Icon data-icon="inline-start" className="animate-spin" />
           ) : (
-            <DownloadIcon className="size-3.5" />
+            <DownloadIcon data-icon="inline-start" />
           )}
           Download
         </Button>
@@ -104,17 +103,17 @@ export function ResumeCard({
           aria-label={`Replace ${fileName}`}
           className="h-8 gap-1.5 text-xs"
         >
-          <RefreshCwIcon className="size-3.5" />
+          <RefreshCwIcon data-icon="inline-start" />
           Replace
         </Button>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={onDelete}
           aria-label={`Delete ${fileName}`}
-          className="h-8 gap-1.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+          className="h-8 gap-1.5 border-destructive text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
         >
-          <Trash2Icon className="size-3.5" />
+          <Trash2Icon data-icon="inline-start" />
           Delete
         </Button>
       </div>

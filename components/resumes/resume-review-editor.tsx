@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Edit3Icon, CheckIcon, XIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 
 interface ResumeReviewEditorProps {
@@ -49,8 +50,8 @@ export function ResumeReviewEditor({
   };
 
   return (
-    <div className="rounded-xl border bg-card p-5 space-y-4 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
+    <div className="flex flex-col gap-4 rounded-xl border bg-card p-5">
+      <div className="flex flex-col justify-between gap-2 pb-3 sm:flex-row sm:items-center">
         <div>
           <h3 className="text-sm font-semibold text-foreground">
             Reviewed Résumé Plain Text
@@ -61,7 +62,7 @@ export function ResumeReviewEditor({
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <span className="text-xs text-muted-foreground font-mono">
+          <span className="sr-only">
             {words} words • {characters} chars
           </span>
 
@@ -72,7 +73,7 @@ export function ResumeReviewEditor({
               onClick={() => setIsEditing(true)}
               className="h-8 gap-1.5 text-xs"
             >
-              <Edit3Icon className="size-3.5" />
+              <Edit3Icon data-icon="inline-start" />
               Edit Text
             </Button>
           )}
@@ -89,7 +90,7 @@ export function ResumeReviewEditor({
       )}
 
       {isEditing ? (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           <Textarea
             id="resume-review-textarea"
             aria-label="Reviewed résumé plain text"
@@ -108,7 +109,7 @@ export function ResumeReviewEditor({
               disabled={isSaving}
               className="h-8 gap-1.5 text-xs"
             >
-              <XIcon className="size-3.5" />
+              <XIcon data-icon="inline-start" />
               Cancel
             </Button>
             <Button
@@ -118,21 +119,22 @@ export function ResumeReviewEditor({
               className="h-8 gap-1.5 text-xs"
             >
               {isSaving ? (
-                <Loader2Icon className="size-3.5 animate-spin" />
+                <Loader2Icon data-icon="inline-start" className="animate-spin" />
               ) : (
-                <CheckIcon className="size-3.5" />
+                <CheckIcon data-icon="inline-start" />
               )}
               Save Changes
             </Button>
           </div>
         </div>
       ) : (
-        <div
+        <ScrollArea
           data-testid="reviewed-text-preview"
-          className="rounded-lg border bg-muted/20 p-4 text-sm font-sans whitespace-pre-wrap leading-relaxed text-foreground break-words max-h-[450px] overflow-y-auto"
+          type="always"
+          className="h-[450px] rounded-lg border bg-muted/20 p-4 text-sm font-sans whitespace-pre-wrap leading-relaxed text-foreground break-words"
         >
           {text || "No text content available."}
-        </div>
+        </ScrollArea>
       )}
     </div>
   );

@@ -6,6 +6,24 @@ import { TextEncoder, TextDecoder } from "node:util";
 
 Object.assign(globalThis, { TextEncoder, TextDecoder });
 
+if (typeof globalThis.ResizeObserver === "undefined") {
+  class ResizeObserverMock {
+    constructor(callback: ResizeObserverCallback) {
+      void callback;
+    }
+    observe(target: Element, options?: ResizeObserverOptions) {
+      void target;
+      void options;
+    }
+    unobserve(target: Element) {
+      void target;
+    }
+    disconnect() {}
+  }
+
+  Object.assign(globalThis, { ResizeObserver: ResizeObserverMock });
+}
+
 expect.extend(toHaveNoViolations);
 
 if (typeof window !== "undefined") {

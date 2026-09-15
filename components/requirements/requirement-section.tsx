@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { PlusIcon, RefreshCwIcon, AlertCircleIcon, Loader2Icon } from "lucide-react";
@@ -18,6 +19,7 @@ import type { RequirementCategory } from "@/lib/validations/requirement";
 interface RequirementSectionProps {
   opportunityId: string;
   jobDescription: string;
+  actionsTargetId?: string;
 }
 
 interface DraftItem {
@@ -32,6 +34,7 @@ interface DraftItem {
 export function RequirementSection({
   opportunityId,
   jobDescription,
+  actionsTargetId,
 }: RequirementSectionProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -193,53 +196,56 @@ export function RequirementSection({
   const quotaUsed = usageData?.used ?? 0;
   const isQuotaExhausted = remainingQuota <= 0;
 
-  return (
-    <section className="space-y-4 pt-4 border-t" aria-labelledby="requirements-heading">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div>
-          <h3 id="requirements-heading" className="text-base font-semibold text-foreground">
-            Role Requirements
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Target qualifications and responsibilities extracted from the job description with verifiable citations.
-          </p>
-        </div>
+  const [actionsTarget, setActionsTarget] = useState<HTMLElement | null>(null);
 
-        {displayItems.length > 0 && !isDraftMode && (
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsAddOpen(true)}
-              className="text-xs h-8"
-            >
-              <PlusIcon className="size-3.5 mr-1" />
-              Add Requirement
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleStartExtraction}
-              disabled={isExtracting || isQuotaExhausted}
-              className="text-xs h-8"
-            >
-              {isExtracting ? (
-                <>
-                  <Loader2Icon className="size-3.5 mr-1 animate-spin" />
-                  Extracting...
-                </>
-              ) : (
-                <>
-                  <RefreshCwIcon className="size-3.5 mr-1" />
-                  Re-extract
-                </>
-              )}
-            </Button>
-          </div>
+  useEffect(() => {
+    if (!actionsTargetId) return;
+
+    const target = document.getElementById(actionsTargetId);
+    if (!target) return;
+
+    const timer = window.setTimeout(() => setActionsTarget(target), 0);
+    return () => window.clearTimeout(timer);
+  }, [actionsTargetId]);
+
+  const actionGroup = displayItems.length > 0 && !isDraftMode ? (
+    <div className="flex items-center gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => setIsAddOpen(true)}
+        className="text-xs h-8"
+      >
+        <PlusIcon className="size-3.5 mr-1" />
+        Add Requirement
+      </Button>
+      <Button
+        type="button"
+        variant="default"
+        size="sm"
+        onClick={handleStartExtraction}
+        disabled={isExtracting || isQuotaExhausted}
+        className="text-xs h-8"
+      >
+        {isExtracting ? (
+          <>
+            <Loader2Icon className="size-3.5 mr-1 animate-spin" />
+            Extracting...
+          </>
+        ) : (
+          <>
+            <RefreshCwIcon className="size-3.5 mr-1" />
+            Re-extract
+          </>
         )}
-      </div>
+      </Button>
+    </div>
+  ) : null;
+
+  return (
+    <section className="space-y-4" aria-label="Confirmed role requirements">
+      {actionGroup && (actionsTarget ? createPortal(actionGroup, actionsTarget) : actionGroup)}
 
       <RequirementQuotaAlert
         used={quotaUsed}
