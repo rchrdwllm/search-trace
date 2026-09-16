@@ -31,13 +31,6 @@ export const navGroups: SidebarNavGroup[] = [
       },
     ],
   },
-  {
-    label: "Coming next",
-    description: "Future screens are not available in this foundation release.",
-    items: [
-      { title: "Opportunity review", disabled: true, icon: "opportunity" },
-    ],
-  },
 ];
 
 export const navLinks = navGroups.flatMap((group) => group.items);

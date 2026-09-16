@@ -162,7 +162,7 @@ export default async function OpportunityDetailPage({
               </dl>
 
               <div className="flex flex-col gap-2">
-                <h3 className="font-sans text-base font-normal">Job description <span className="font-sans text-sm font-normal text-muted-foreground">· pasted by you</span></h3>
+                <p className="font-sans text-base font-normal">Job description <span className="font-sans text-sm font-normal text-muted-foreground">· pasted by you</span></p>
                 <ScrollArea tabIndex={0} aria-label="Pasted job description, scrollable" className="h-80 whitespace-pre-wrap break-words rounded-lg border bg-muted/30 p-4 text-sm leading-relaxed">
                   {opportunity.jobDescription}
                 </ScrollArea>
@@ -202,11 +202,12 @@ export default async function OpportunityDetailPage({
                     )}
                   </div>
                   <CardDescription>Compare confirmed requirements with the sources you reviewed and opted in.</CardDescription>
+                  <div id={`analysis-metadata-${opportunity.id}`} />
                 </div>
                 <div id={`analysis-actions-${opportunity.id}`} className="flex items-center gap-2" />
               </div>
             </CardHeader>
-            <CardContent><AnalysisSection opportunityId={opportunity.id} actionsTargetId={`analysis-actions-${opportunity.id}`} /></CardContent>
+            <CardContent><AnalysisSection opportunityId={opportunity.id} actionsTargetId={`analysis-actions-${opportunity.id}`} metadataTargetId={`analysis-metadata-${opportunity.id}`} /></CardContent>
           </Card>
 
           <Card id="requirements" className="scroll-mt-24">

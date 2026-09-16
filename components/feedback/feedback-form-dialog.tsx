@@ -14,6 +14,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import {
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -38,6 +46,7 @@ import type { FeedbackItem } from "@/lib/db/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface FeedbackFormDialogProps {
   open: boolean;
@@ -274,49 +283,58 @@ function FeedbackForm({
       </div>
 
       {/* Provenance Classification */}
-      <div className="space-y-1.5">
-        <Label className="text-xs font-semibold">
+      <FieldSet className="gap-1.5">
+        <FieldLegend
+          id="provenance-label"
+          variant="label"
+          className="text-xs font-semibold"
+        >
           Provenance Classification <span className="text-destructive">*</span>
-        </Label>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        </FieldLegend>
+        <RadioGroup
+          aria-labelledby="provenance-label"
+          name="provenance"
+          value={provenance}
+          onValueChange={(value) => setProvenance(value as FeedbackProvenance)}
+          disabled={isSubmitting}
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+        >
           {feedbackProvenanceEnum.options.map((option) => {
             const isChecked = provenance === option;
             const isQuote = option === "exact_quote";
+            const optionId = `provenance-${option}`;
             return (
-              <label
+              <FieldLabel
                 key={option}
-                htmlFor={`provenance-${option}`}
-                className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 transition-colors ${
+                htmlFor={optionId}
+                className={cn(
+                  "flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 transition-colors",
                   isChecked
                     ? "border-primary bg-primary/5 text-foreground"
-                    : "border-border bg-card text-muted-foreground hover:bg-muted/40"
-                }`}
+                    : "border-border bg-card text-muted-foreground hover:bg-muted/40",
+                )}
               >
-                <input
-                  type="radio"
-                  id={`provenance-${option}`}
-                  name="provenance"
+                <RadioGroupItem
+                  id={optionId}
                   value={option}
-                  checked={isChecked}
-                  onChange={() => setProvenance(option)}
                   disabled={isSubmitting}
-                  className="mt-0.5 size-4 accent-primary"
+                  className="mt-0.5 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                 />
-                <div className="space-y-0.5">
+                <FieldContent className="gap-0.5">
                   <span className="block text-xs font-semibold text-foreground">
                     {feedbackProvenanceLabels[option]}
                   </span>
-                  <span className="block text-[11px] leading-tight text-muted-foreground">
+                  <FieldDescription className="text-[11px] leading-tight">
                     {isQuote
                       ? "Verbatim quote or direct excerpt from employer communication"
                       : "Paraphrased recollection or personal summary of what was shared"}
-                  </span>
-                </div>
-              </label>
+                  </FieldDescription>
+                </FieldContent>
+              </FieldLabel>
             );
           })}
-        </div>
-      </div>
+        </RadioGroup>
+      </FieldSet>
 
       {/* Feedback Textarea */}
       <div className="space-y-1.5">

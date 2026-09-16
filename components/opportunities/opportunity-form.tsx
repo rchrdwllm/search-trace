@@ -7,6 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   opportunityStatusEnum,
   type OpportunityStatus,
 } from "@/lib/validations/opportunity";
@@ -148,26 +156,25 @@ export function OpportunityForm({
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
-          <select
-            id="status"
+          <Select
             name="status"
             value={status}
-            onChange={(e) =>
-              setStatus(e.target.value as OpportunityStatus)
-            }
+            onValueChange={(value) => setStatus(value as OpportunityStatus)}
             disabled={isSubmitting}
-            className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 md:text-sm dark:bg-input/30"
           >
-            {opportunityStatusEnum.options.map((opt) => (
-              <option
-                key={opt}
-                value={opt}
-                className="bg-background text-foreground"
-              >
-                {opt.charAt(0).toUpperCase() + opt.slice(1)}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="status" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {opportunityStatusEnum.options.map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">

@@ -54,8 +54,7 @@ export function OpportunityDeleteDialog({
         {trigger ?? (
           <Button
             variant="outline"
-            size="sm"
-            className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
           >
             <Trash2Icon data-icon="inline-start" aria-hidden="true" />
             Delete

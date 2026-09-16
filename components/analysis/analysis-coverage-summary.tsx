@@ -25,9 +25,6 @@ export function AnalysisCoverageSummary({
       label: "Supported",
       count: counts.supported,
       icon: CheckCircle2,
-      style:
-        "border-emerald-200 bg-emerald-50/50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-200",
-      badgeStyle: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300",
       description: "Direct proof in submitted materials",
     },
     {
@@ -35,9 +32,6 @@ export function AnalysisCoverageSummary({
       label: "Weak",
       count: counts.weak,
       icon: AlertTriangle,
-      style:
-        "border-amber-200 bg-amber-50/50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/20 dark:text-amber-200",
-      badgeStyle: "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300",
       description: "Partial or introductory exposure",
     },
     {
@@ -45,9 +39,6 @@ export function AnalysisCoverageSummary({
       label: "Missing",
       count: counts.missing,
       icon: XCircle,
-      style:
-        "border-rose-200 bg-rose-50/50 text-rose-900 dark:border-rose-800 dark:bg-rose-950/20 dark:text-rose-200",
-      badgeStyle: "bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300",
       description: "Searched but not found in evidence",
     },
     {
@@ -55,9 +46,6 @@ export function AnalysisCoverageSummary({
       label: "Unknown",
       count: counts.unknown,
       icon: HelpCircle,
-      style:
-        "border-slate-200 bg-slate-50/50 text-slate-900 dark:border-slate-800 dark:bg-slate-950/20 dark:text-slate-200",
-      badgeStyle: "bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-300",
       description: "Insufficient context to evaluate",
     },
   ];
@@ -75,29 +63,26 @@ export function AnalysisCoverageSummary({
         return (
           <div
             key={card.id}
-            className={cn(
-              "flex flex-col justify-between rounded-xl border p-3.5 transition-colors sm:p-4",
-              card.style
-            )}
+            className="flex flex-col justify-between rounded-xl border border-border bg-card p-3.5 text-foreground transition-colors sm:p-4"
             data-testid={`coverage-count-${card.id}`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium uppercase tracking-wider opacity-85 sm:text-sm">
+              <span className="font-mono text-xs font-medium uppercase tracking-wider text-foreground sm:text-sm">
                 {card.label}
               </span>
-              <Icon className="size-4 opacity-75 sm:size-5" aria-hidden="true" />
+              <Icon className="size-4 text-muted-foreground sm:size-5" aria-hidden="true" />
             </div>
             <div className="mt-2.5 flex items-baseline justify-between">
-              <span className="text-2xl font-bold tracking-tight sm:text-3xl">
+              <span className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 {card.count}
               </span>
-              <span className="text-[11px] opacity-70">
+              <span className="text-[11px] text-muted-foreground">
                 {counts.total > 0
                   ? `${Math.round((card.count / counts.total) * 100)}%`
                   : "0%"}
               </span>
             </div>
-            <p className="mt-1 text-[11px] opacity-75 line-clamp-1">
+            <p className="mt-1 line-clamp-1 text-[11px] text-muted-foreground">
               {card.description}
             </p>
           </div>
@@ -106,14 +91,14 @@ export function AnalysisCoverageSummary({
 
       {evidenceStats && (evidenceStats.citedEvidenceCount > 0 || (evidenceStats.totalEvidenceCount ?? 0) > 0) && (
         <div
-          className="col-span-2 sm:col-span-4 flex flex-col gap-2 rounded-xl border border-primary/20 bg-primary/5 p-3.5 sm:p-4 text-xs"
+          className="col-span-2 flex flex-col gap-2 rounded-xl border border-border bg-card p-3.5 text-xs text-foreground sm:col-span-4 sm:p-4"
           data-testid="evidence-utilization-panel"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 font-medium text-foreground">
-              <FolderGit2 className="size-4 text-primary shrink-0" aria-hidden="true" />
+              <FolderGit2 className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               <span>Supporting Evidence Contribution:</span>
-              <span className="text-primary font-semibold">
+              <span className="font-semibold text-foreground">
                 {evidenceStats.citedEvidenceCount} of {evidenceStats.totalEvidenceCount ?? evidenceStats.citedEvidenceCount} attached items cited as proof
               </span>
             </div>

@@ -129,7 +129,7 @@ describe("Evidence-Gap Analysis UI Components", () => {
   });
 
   describe("AnalysisNextActionCard", () => {
-    it("renders focus recommendation, target requirement title, and disclaimer", () => {
+    it("renders focus recommendation and target requirement title", () => {
       render(
         <AnalysisNextActionCard
           text="Build a deployed project with Docker and Kubernetes."
@@ -142,8 +142,8 @@ describe("Evidence-Gap Analysis UI Components", () => {
       ).toBeInTheDocument();
       expect(screen.getByText("Kubernetes orchestration")).toBeInTheDocument();
       expect(
-        screen.getByText(/SearchTrace does not calculate hiring probabilities/i)
-      ).toBeInTheDocument();
+        screen.queryByText(/SearchTrace does not calculate hiring probabilities/i)
+      ).not.toBeInTheDocument();
     });
 
     it("has no accessibility violations", async () => {

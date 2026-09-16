@@ -77,7 +77,7 @@ export function OpportunityCard({ opportunity }: OpportunityCardProps) {
           className="inline-flex min-h-8 items-center gap-1 font-semibold text-foreground outline-none hover:text-primary hover:underline focus:text-primary focus:underline"
         >
           Open opportunity
-          <ArrowRightIcon aria-hidden="true" />
+          <ArrowRightIcon className="size-4 shrink-0" aria-hidden="true" />
         </Link>
       </CardFooter>
     </Card>

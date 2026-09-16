@@ -27,7 +27,7 @@ export function EvidenceCard({
   return (
     <div
       className={cn(
-        "group flex flex-col gap-4 rounded-lg border bg-card p-4 transition-colors hover:border-muted-foreground/60",
+        "group flex flex-col gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-muted-foreground/60",
         className,
       )}
       data-testid={`evidence-card-${evidence.id}`}
@@ -88,23 +88,13 @@ export function EvidenceCard({
       </div>
 
       {evidence.sourceUrl && (
-        <div className="pt-3 text-xs">
-          <Separator className="mb-3" />
-          <a href={evidence.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-1.5 font-medium text-primary hover:underline break-all" aria-label={`View link for ${evidence.title} (opens in new tab)`}>
+        <div className="pt-1 text-xs">
+          <Separator className="mb-2" />
+          <a href={evidence.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline break-all" aria-label={`View link for ${evidence.title} (opens in new tab)`}>
             <ExternalLinkIcon className="size-4 shrink-0" aria-hidden="true" />
             <span>{evidence.sourceUrl}</span>
           </a>
         </div>
-      )}
-
-      {!isOpportunityView && (
-        <details className="grid gap-1 pt-3">
-          <Separator className="mb-2" />
-          <summary className="flex min-h-11 cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
-            Attach this item to an opportunity
-          </summary>
-          <p className="pl-5 text-sm text-muted-foreground">Choose relevant opportunities while editing this evidence.</p>
-        </details>
       )}
 
     </div>

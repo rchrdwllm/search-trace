@@ -13,19 +13,19 @@ export function FeedbackEmptyState({
   description = "Preserve recruiter comments, interview feedback, or rejection notes as reported signals without treating them as proven causality.",
 }: FeedbackEmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center animate-in fade-in-50">
-      <div className="flex size-12 items-center justify-center rounded-full bg-muted/60 text-muted-foreground mb-4">
+    <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border-2 border-dashed border-border bg-card/40 p-6 text-center animate-in fade-in-50 sm:p-8">
+      <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
         <MessageSquareTextIcon className="size-6" aria-hidden="true" />
       </div>
 
-      <h3 className="text-base font-semibold text-foreground mb-1">{title}</h3>
-      <p className="text-sm text-muted-foreground max-w-md mb-5 leading-relaxed">
-        {description}
-      </p>
+      <div className="flex max-w-md flex-col gap-1.5">
+        <h3 className="text-lg font-bold text-foreground">{title}</h3>
+        <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
+      </div>
 
       {onAddFeedback && (
-        <Button onClick={onAddFeedback} size="sm" className="gap-1.5">
-          <PlusIcon className="size-4" aria-hidden="true" />
+        <Button onClick={onAddFeedback} className="mt-2">
+          <PlusIcon data-icon="inline-start" aria-hidden="true" />
           Add Feedback
         </Button>
       )}

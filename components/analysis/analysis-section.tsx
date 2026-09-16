@@ -27,12 +27,14 @@ interface AnalysisSectionProps {
   opportunityId: string;
   className?: string;
   actionsTargetId?: string;
+  metadataTargetId?: string;
 }
 
 export function AnalysisSection({
   opportunityId,
   className,
   actionsTargetId,
+  metadataTargetId,
 }: AnalysisSectionProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -159,6 +161,7 @@ export function AnalysisSection({
   };
 
   const [actionsTarget, setActionsTarget] = useState<HTMLElement | null>(null);
+  const [metadataTarget, setMetadataTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!actionsTargetId) return;
@@ -170,25 +173,34 @@ export function AnalysisSection({
     return () => window.clearTimeout(timer);
   }, [actionsTargetId]);
 
+  useEffect(() => {
+    if (!metadataTargetId) return;
+
+    const target = document.getElementById(metadataTargetId);
+    if (!target) return;
+
+    const timer = window.setTimeout(() => setMetadataTarget(target), 0);
+    return () => window.clearTimeout(timer);
+  }, [metadataTargetId]);
+
+  const lastEvaluated = isAnalyzed && summary?.lastAnalyzedAt ? (
+    <p className="flex items-center gap-1 text-xs text-muted-foreground">
+      <Clock className="size-3 shrink-0" aria-hidden="true" />
+      Last evaluated on {new Date(summary.lastAnalyzedAt).toLocaleString()}
+    </p>
+  ) : null;
+
   const analysisActions = isAnalyzed && summary ? (
-    <div className="flex flex-col items-end gap-1">
-      {summary.lastAnalyzedAt && (
-        <p className="flex items-center gap-1 whitespace-nowrap text-xs text-muted-foreground">
-          <Clock className="size-3" />
-          Last evaluated on {new Date(summary.lastAnalyzedAt).toLocaleString()}
-        </p>
-      )}
-      <Button
-        type="button"
-        variant="default"
-        size="sm"
-        onClick={() => setIsPreflightOpen(true)}
-        disabled={runMutation.isPending || (dailyUsage && dailyUsage.remaining <= 0)}
-      >
-        <RefreshCw className="mr-1.5 size-3.5" />
-        Re-run Analysis
-      </Button>
-    </div>
+    <Button
+      type="button"
+      variant="default"
+      size="sm"
+      onClick={() => setIsPreflightOpen(true)}
+      disabled={runMutation.isPending || (dailyUsage && dailyUsage.remaining <= 0)}
+    >
+      <RefreshCw data-icon="inline-start" />
+      Re-run Analysis
+    </Button>
   ) : null;
 
   return (
@@ -198,7 +210,12 @@ export function AnalysisSection({
       data-testid="analysis-section"
     >
       <div className="space-y-6">
-        {analysisActions && (actionsTarget ? createPortal(analysisActions, actionsTarget) : analysisActions)}
+        {lastEvaluated && (metadataTarget ? createPortal(lastEvaluated, metadataTarget) : lastEvaluated)}
+        {analysisActions && (
+          actionsTarget
+            ? createPortal(analysisActions, actionsTarget)
+            : <div className="flex items-center gap-2">{analysisActions}</div>
+        )}
 
         {/* Error Alert */}
         {errorMessage && (

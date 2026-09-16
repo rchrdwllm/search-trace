@@ -15,7 +15,7 @@ describe("SearchTrace application shell", () => {
     expect(screen.getByRole("navigation", { name: "Primary navigation" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Toggle navigation sidebar" })).toBeInTheDocument();
     expect(screen.getByText(/No account, persistence, analysis/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Opportunity review" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Opportunity review" })).not.toBeInTheDocument();
     expect(screen.queryByText(/Create Next App|Vercel|Dashboard|Sales|Store|Orders|Products|Customers|Marketing|Efferd/i)).not.toBeInTheDocument();
   });
 });

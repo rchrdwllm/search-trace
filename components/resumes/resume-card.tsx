@@ -111,7 +111,7 @@ export function ResumeCard({
           size="sm"
           onClick={onDelete}
           aria-label={`Delete ${fileName}`}
-          className="h-8 gap-1.5 border-destructive text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+          className="h-8 gap-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
         >
           <Trash2Icon data-icon="inline-start" />
           Delete

@@ -57,7 +57,7 @@ export function OpportunityEvidenceSection({
   return (
     <Card className="w-full">
       <CardHeader>
-        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+        <div className="grid gap-4 @2xl/card-header:grid-cols-[minmax(0,1fr)_auto] @2xl/card-header:items-start">
           <div className="flex flex-col gap-1">
             <p className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
               03 · Source material
@@ -75,7 +75,7 @@ export function OpportunityEvidenceSection({
             </CardDescription>
           </div>
 
-          <div className="flex items-center gap-2 sm:pt-5">
+          <div className="flex flex-wrap items-center justify-end gap-2 @2xl/card-header:pt-5">
             <Button
               variant="outline"
               size="sm"
